@@ -127,7 +127,6 @@ So after receiving, the device prepares its “pong” (GPS position) and transm
 - ✅ Install the PlatformIO extension
 - Connect your T-Beam via USB (CH9102 driver may be required depending on your OS)
 - Compile & Upload
-- Platform IO requires, that the main program is named main.cpp, and any other file with the suffix .cpp will be used when compiling code. Therefore, when compiling and uploading the program for sender, (Sender T-Beam connected with USB cable to computer) the file main_sender.cpp must be renamed to main.cpp, and the file main_receive.cpp must be renamed to  main_receive.xxx. Then, after the sender program has been compiled and uploaded, vice versa, the main_sender.cpp must be renamed to main_sender.xxx and the main_receive.cpp must be renamed to main.cpp. And  then connect the receiver device to the computer and compile and upload the receiver program.
    
 - Open the sender project and run:
 - Build
