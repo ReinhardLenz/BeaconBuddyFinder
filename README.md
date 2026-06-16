@@ -2,7 +2,7 @@
 
 A minimal two-device project using **two LILYGO T-Beam V1.2 (ESP32 + SX1262)** boards to communicate over **LoRa** in the **EU 868 MHz** band.
 
-The program is  a "ping - pong" program between two ESP32 (T-BEAM) with LORA communication. Both transmit regularly their GPS position to each other. 
+The program is  a "ping - pong" program between two ESP32 (T-BEAM) with LORA communication. Both T-BEAM transmit regularly their GPS position to each other. 
 
 
 ---
@@ -29,16 +29,58 @@ This repository contains the program "main" using the **RadioLib** library to co
 ## Program Logic (How it works)
 
 ### 1) (`main.cpp`)
-1. Starts the serial port.
-2. Initializes the SX1262 radio at **868.0 MHz** (must match the sender).
-3. Continuously calls `radio.receive(...)`:
-   - If a message arrives, it prints:
-     - the received text
-     - **RSSI** (signal strength)
-     - **SNR** (signal quality)
+This sketch makes two ESP32 T‑Beam boards “take turns” talking over LoRa. One board starts by sending a first message (because #define INITIATING_NODE is enabled). After that, the devices alternate like a ping‑pong game:
 
-**Key idea:** 
+Step A (Transmit): send a LoRa packet
+Step B (Receive): wait for the other device’s packet, read it, then send your own GPS position back
+Repeat forever.
+The important idea is that LoRa sending/receiving is handled asynchronously: when you call radio.startTransmit(...) or radio.startReceive(), the radio works in the background. When it finishes (either a packet was sent or a packet was received), the radio triggers an interrupt on DIO1, and RadioLib calls your callback setFlag(). That callback only does one thing:
 
+operationDone = true; → “Hey main loop, the radio finished something!”
+#### if (operationDone) { ... } 
+operationDone is like a doorbell. Most of the time it is false, and the loop() does basically nothing (it does not constantly poll the radio or block waiting).
+
+Only when the radio signals “I’m done” (send finished or receive finished), operationDone becomes true, and then this block runs:
+
+Enter the block only once per radio event
+The first thing it does is reset the doorbell:
+
+operationDone = false;
+This prevents the code from running repeatedly for the same event.
+
+Decide what just finished
+The code then checks transmitFlag to know whether the last operation was a transmit or a receive.
+
+So if(operationDone) means:
+ “Only react when the radio has completed an action.”
+
+#### if (transmitFlag) { ... } else { ... } 
+transmitFlag is like a mode marker that tells the program what it was doing last:
+
+transmitFlag == true → “We just transmitted something, now we should switch to listening.”
+transmitFlag == false → “We just received something (or were listening), now we should process it and transmit our reply.”
+##### Case 1: if (transmitFlag) (transmit just finished)
+This branch runs right after a send completes:
+
+It checks whether the send succeeded (transmissionState).
+Then it immediately switches the radio into receive mode:
+
+radio.startReceive();
+transmitFlag = false;
+So after sending, the device becomes a listener, waiting for the other node’s response.
+
+##### Case 2: else (receive just finished)
+This branch runs when a packet has been received:
+
+It reads the received message (radio.readData(str)) and prints it.
+Then it reads GPS data for ~1 second, and if a fresh location is available it formats:
+"lat,lon\r\n"
+otherwise "No GPS\r\n"
+Finally it sends that message via LoRa:
+
+transmissionState = radio.startTransmit(msg);
+transmitFlag = true;
+So after receiving, the device prepares its “pong” (GPS position) and transmits it back.
 ---
 
 ## Features
@@ -95,12 +137,6 @@ This repository contains the program "main" using the **RadioLib** library to co
 
 -Serial Monitor Settings
 -Baud rate: 115200
-
-## Sender output example:
-
--SX126x Sender starting...
--	Radio init OK
--	Sending: GPS
 
 ## Usage
 -	Flash Receiver firmware to one T-Beam.
