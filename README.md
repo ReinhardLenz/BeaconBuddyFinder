@@ -113,7 +113,7 @@ So after receiving, the device prepares its “pong” (GPS position) and transm
 
 ## Dependencies / Libraries Used
  - Arduino framework (ESP32)
- - RadioLib by Jan Gromeš
+ - a trimmed version of RadioLib by Jan Gromeš which is "inside" this project. For me, the full library takes about 8 min to compile, with the trimmed Radiolib version, it's about 2 min. But this is only applicable for this very specific T-Beam version, which was available to me. If you want to take it out, please remove RadioLibTrim from the /lib folder.
 
 	Used to control the SX1262 LoRa radio.
 	In PlatformIO, you typically add:
