@@ -84,7 +84,6 @@ transmitFlag = true;
 ```
 
 So after receiving, the device prepares its “pong” (GPS position) and transmits it back.
----
 
 ##### Calculation of the angle and distance
 
