@@ -85,7 +85,7 @@ So after receiving, the device prepares its “pong” (GPS position) and transm
 
 ##### Calculation of the angle and distance
 
-For the distance calculation, the Haversine is used [Link Text](https://en.wikipedia.org/wiki/Haversine_formula)
+For the distance calculation, the Haversine is used [Wikipedia about Haversine](https://en.wikipedia.org/wiki/Haversine_formula)
 
 to find the bearing (direction angle) from one GPS point to another, the function treats Earth like a sphere and uses trigonometry. First, it converts both locations’ latitude and longitude from degrees to radians (because math functions expect radians). Then it looks at the difference in longitude between the two points and computes two values that represent how far “east/west” and “north/south” the second point is relative to the first on the globe. Using atan2(y, x), it turns those into an angle. Finally, it converts the angle back to degrees and normalizes it to 0–360°, where 0° is north, 90° east.
 
