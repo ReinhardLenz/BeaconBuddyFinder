@@ -81,7 +81,7 @@ Finally it sends that message via LoRa:
 ```csharp
 transmissionState = radio.startTransmit(msg);
 transmitFlag = true;
-
+```
 
 So after receiving, the device prepares its “pong” (GPS position) and transmits it back.
 ---
