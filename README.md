@@ -21,9 +21,8 @@ In this project, LoRa is used to send a simple text message from one board to an
 ---
 
 ## Software Overview
-
 This repository contains the program "main" using the **RadioLib** library to control the **SX1262 LoRa radio** on the T-Beam.
-IN this branch GPS_bearing, the distance and bearing betwene "self" T-BEAM and "companion T-BEAM" is calculated.
+In this branch GPS_bearing, the distance and bearing betwene "self" T-BEAM and "companion T-BEAM" is calculated.
 ---
 
 ## Program Logic (How it works)
@@ -124,7 +123,8 @@ Sending: 60.624836,24.828445
 
 ## Features
 
-- ✅ Simple “ping pong” LoRa link 
+- ✅ “ping pong” LoRa link 
+- ✅ Pong calculates distance and bearing of Ping and vice-versa 
 - ✅ Uses **EU 868 MHz** frequency
 - ✅ Serial logging for easy debugging
 - ✅ Built with **PlatformIO** + Arduino framework
@@ -152,7 +152,7 @@ Sending: 60.624836,24.828445
 
 ## Dependencies / Libraries Used
  - Arduino framework (ESP32)
- - a trimmed version of RadioLib by Jan Gromeš which is "inside" this project. For me, the full library takes about 8 min to compile, with the trimmed Radiolib version, it's about 2 min. But this is only applicable for this very specific T-Beam version, which was available to me. If you want to take it out, please remove RadioLibTrim from the /lib folder.
+ - a trimmed version of RadioLib by Jan Gromeš which is "inside" this project in a shortened form. For me, the full library takes about 8 min to compile, with this 'trimmed' Radiolib version, it's reduced to about 2 min. But this is only applicable for this very specific T-Beam version, which was available to me. If you want to take it out, please remove RadioLibTrim from the /lib folder.
 
 	Used to control the SX1262 LoRa radio.
 	In PlatformIO, you typically add:
@@ -168,10 +168,10 @@ Sending: 60.624836,24.828445
 - Compile & Upload
    
 - Open the sender project and run:
-- Build
+- Build (#define INITIATING_NODE is not commented out)
 - Upload
 - Monitor (Serial Monitor at 115200 baud)
--Repeat for the receiver project.
+-Repeat for the receiver project, but comment out //#define INITIATING_NODE
 
 -Serial Monitor Settings
 -Baud rate: 115200
@@ -186,10 +186,11 @@ Sending: 60.624836,24.828445
 -	Verify correct SX1262 pin mapping (RST/BUSY/DIO1/NSS)
 
 ## Future Improvements
--	Add configurable LoRa parameters (SF/BW/CR) via #define or Serial commands
--	Add encryption/authentication (basic integrity protection)
--	Add deep sleep for low-power battery operation
--	Add structured payloads (JSON or binary packets)
+-	Add BNO085 IMU sensor and compass
+-	Add a third Lora device, and develop triangulation or GPS calibration
+- Testing out different LORA radio Parameters, like spreading etc
+- adding  pygame based python scripts, that can simultaneously plot the route of the other beacon
+
 ## Acknowledgements
 -	RadioLib library by Jan Gromeš and contributors
 -	LILYGO for the T-Beam hardware platform
