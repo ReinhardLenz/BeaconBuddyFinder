@@ -21,9 +21,9 @@ In this project, LoRa is used to send a simple text message from one board to an
 ---
 
 ## Software Overview
+
 This repository contains the program "main" using the **RadioLib** library to control the **SX1262 LoRa radio** on the T-Beam.
 In this branch GPS_bearing, the distance and bearing betwene "self" T-BEAM and "companion T-BEAM" is calculated.
----
 
 ## Program Logic (How it works)
 
