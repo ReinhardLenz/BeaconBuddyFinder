@@ -74,11 +74,24 @@ void setup() {
 }
 
 void loop() {
-  // Continuously feed GPS decoder (recommended)
   while (GPS.available()) {
     gps.encode(GPS.read());
   }
 
-  // All the former "if (operationDone) { ... }" logic is now here:
   GPSBearing::handleRadioOperation(radio, gps, ctx);
+
+  // ---- Print distance + bearing ----
+  GPSBearingOutput out = GPSBearing::computeOutput(gps, ctx);
+
+  if (out.valid) {
+    Serial.print("Distance (m): ");
+    Serial.print(out.distance_m, 1);     // 1 decimal
+    Serial.print(" | Bearing (deg): ");
+    Serial.println(out.bearing_deg, 1);
+  } else {
+    // Optional: show why it's not printing yet
+    // Serial.println("Waiting for valid GPS (both nodes)...");
+  }
+
+  delay(250); // optional: slow down serial spam
 }

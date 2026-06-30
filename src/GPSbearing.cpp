@@ -126,10 +126,17 @@ bool GPSBearing::handleRadioOperation(SX1262& radio, TinyGPSPlus& gps, GPSBearin
         if (gpsProperValid(gps) && companionValid(ctx)) {
           double d = distanceMeters(ctx.lat_proper, ctx.lon_proper, ctx.lat_companion, ctx.lon_companion);
           double b = bearingDegrees(ctx.lat_proper, ctx.lon_proper, ctx.lat_companion, ctx.lon_companion);
-
+/*
           Serial.print(d, 1);
           Serial.print(",");
           Serial.println(b, 1);
+ */         
+          GPSBearingOutput out = computeOutput(gps, ctx);
+          if (out.valid) {
+//            Serial.print(out.distance_m, 1);
+//            Serial.print(",");
+ //           Serial.println(out.bearing_deg, 1);
+          }
 
         } else {
           Serial.println("⚠️ Cannot compute distance");
