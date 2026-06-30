@@ -32,6 +32,7 @@ SX1262 radio = SX1262(
     LORA_BUSY
   )
 );
+//TEST LINE
 
 static const float LORA_FREQ = 868.0;   // change to 915.0 if needed
 
@@ -45,7 +46,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-#define INITIATING_NODE
+//#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;
@@ -174,7 +175,7 @@ void loop() {
     if (transmitFlag) {
       // previous operation was transmission
       if (transmissionState == RADIOLIB_ERR_NONE) {
-        Serial.println(F("transmission finished!"));
+        //Serial.println(F("transmission finished!"));
       } else {
         Serial.print(F("failed, code "));
         Serial.println(transmissionState);
@@ -190,8 +191,8 @@ void loop() {
       int state = radio.readData(str);
 
       if (state == RADIOLIB_ERR_NONE) {
-        Serial.print("Received raw: ");
-        Serial.println(str);
+        //Serial.print("Received raw: ");
+        //Serial.println(str);
 
         // Try parsing companion GPS
         double latTmp, lonTmp;
@@ -199,29 +200,34 @@ void loop() {
           lat_companion = latTmp;
           lon_companion = lonTmp;
 
-          Serial.print("✅ Parsed companion GPS -> Latitude = ");
+          /*Serial.print("✅ Parsed companion GPS -> Latitude = ");
           Serial.print(lat_companion, 6);
           Serial.print(" Longitude = ");
-          Serial.println(lon_companion, 6);
+          Serial.println(lon_companion, 6); */
 
           // If we also have our own valid GPS, compute distance + bearing
           if (gpsProperValid() && companionValid()) {
             double d = distanceMeters(lat_proper, lon_proper, lat_companion, lon_companion);
             double b = bearingDegrees(lat_proper, lon_proper, lat_companion, lon_companion);
 
-            Serial.print("📏 Distance to companion: ");
-            Serial.print(d, 1);
-            Serial.println(" m");
+            //Serial.print("Distance to companion: ");
+            //Serial.print(d, 1);
+            //Serial.println(" m");
 
-            Serial.print("🧭 Bearing to companion: ");
-            Serial.print(b, 1);
-            Serial.println(" deg (0=N, 90=E)");
+            //Serial.print("Bearing to companion: ");
+            //Serial.print(b, 1);
+            //Serial.println(" deg (0=N, 90=E)");
+          
+            Serial.print(d, 1);
+            Serial.print(",");
+            Serial.println(b, 1);
+          
           } else {
-            Serial.println("⚠️ Cannot compute distance/bearing yet (missing valid GPS fix).");
+            Serial.println("⚠️ Cannot compute distance");
           }
 
         } else {
-          Serial.println("⚠️ Received message is not a valid 'lat,lon' pair (ignored).");
+          Serial.println("⚠️ Received message is not a valid");
         }
       } else {
         Serial.print("readData failed, code ");
@@ -243,8 +249,8 @@ void loop() {
                  "No GPS\r\n");
       }
 
-      Serial.print("Sending: ");
-      Serial.println(msg);
+      //Serial.print("Sending: ");
+      //Serial.println(msg);
 
       transmissionState = radio.startTransmit(msg);
       transmitFlag = true;
