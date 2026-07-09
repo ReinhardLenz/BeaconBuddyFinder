@@ -1,0 +1,320 @@
+// Content from ReceiveBuddyInfo.cpp
+#include "ReceiveBuddyInfo.h"
+#include <math.h>
+
+// Define the globals (storage lives here)
+double lat_companion = 0.0;
+double lon_companion = 0.0;
+double d = 0.0;
+double b = 0.0;
+
+static inline double deg2rad(double deg) { return deg * (M_PI / 180.0); }
+static inline double rad2deg(double rad) { return rad * (180.0 / M_PI); }
+
+bool parseCompanionGps(const String& in, double &latOut, double &lonOut) {
+  String s = in;
+  s.trim();
+
+  int comma = s.indexOf(',');
+  if (comma < 0) return false;
+
+  String latStr = s.substring(0, comma);
+  String lonStr = s.substring(comma + 1);
+
+  latStr.trim();
+  lonStr.trim();
+
+  if (latStr.length() == 0 || lonStr.length() == 0) return false;
+
+  latOut = latStr.toDouble();
+  lonOut = lonStr.toDouble();
+
+  if (latOut < -90.0 || latOut > 90.0) return false;
+  if (lonOut < -180.0 || lonOut > 180.0) return false;
+
+  return true;
+}
+
+double distanceMeters(double lat1, double lon1, double lat2, double lon2) {
+  const double R = 6371000.0;
+  double phi1 = deg2rad(lat1);
+  double phi2 = deg2rad(lat2);
+  double dphi = deg2rad(lat2 - lat1);
+  double dlambda = deg2rad(lon2 - lon1);
+
+  double a = sin(dphi/2.0) * sin(dphi/2.0) +
+             cos(phi1) * cos(phi2) *
+             sin(dlambda/2.0) * sin(dlambda/2.0);
+
+  double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+  return R * c;
+}
+
+double bearingDegrees(double lat1, double lon1, double lat2, double lon2) {
+  double phi1 = deg2rad(lat1);
+  double phi2 = deg2rad(lat2);
+  double dlambda = deg2rad(lon2 - lon1);
+
+  double y = sin(dlambda) * cos(phi2);
+  double x = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(dlambda);
+
+  double theta = atan2(y, x);
+  double brng = rad2deg(theta);
+  brng = fmod((brng + 360.0), 360.0);
+  return brng;
+}
+
+static bool companionValid() {
+  return !(lat_companion == 0.0 && lon_companion == 0.0);
+}
+
+static bool properValid(double lat_proper, double lon_proper) {
+  // If you prefer TinyGPSPlus validity, keep that check in main.cpp and pass a bool instead.
+  return !(lat_proper == 0.0 && lon_proper == 0.0);
+}
+
+void handleTxFinished(SX1262& radio, bool& transmitFlag, int transmissionState) {
+  if (transmissionState == RADIOLIB_ERR_NONE) {
+    Serial.println(F("transmission finished!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(transmissionState);
+  }
+
+  radio.startReceive();
+  transmitFlag = false;
+}
+
+void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
+  String str;
+  int state = radio.readData(str);
+
+  if (state != RADIOLIB_ERR_NONE) {
+    Serial.print("readData failed, code ");
+    Serial.println(state);
+    return;
+  }
+
+  Serial.print("Received raw: ");
+  Serial.println(str);
+
+  double latTmp, lonTmp;
+  if (!parseCompanionGps(str, latTmp, lonTmp)) {
+    Serial.println("⚠️ Received message is not a valid 'lat,lon' pair (ignored).");
+    return;
+  }
+
+  lat_companion = latTmp;
+  lon_companion = lonTmp;
+
+  Serial.print("✅ Parsed companion GPS -> Latitude = ");
+  Serial.print(lat_companion, 6);
+  Serial.print(" Longitude = ");
+  Serial.println(lon_companion, 6);
+
+  if (properValid(lat_proper, lon_proper) && companionValid()) {
+    d = distanceMeters(lat_proper, lon_proper, lat_companion, lon_companion);
+    b = bearingDegrees(lat_proper, lon_proper, lat_companion, lon_companion);
+
+    Serial.print("📏 Distance to companion: ");
+    Serial.print(d, 1);
+    Serial.println(" m");
+
+    Serial.print("🧭 Bearing to companion: ");
+    Serial.print(b, 1);
+    Serial.println(" deg (0=N, 90=E)");
+  } else {
+    Serial.println("⚠️ Cannot compute distance/bearing yet (missing valid GPS fix).");
+  }
+}
+
+// Content from ReceiveBuddyInfo.h
+#pragma once
+#include <Arduino.h>
+#include <RadioLib.h>
+
+// Public (global) outputs from this module:
+extern double lat_companion;
+extern double lon_companion;
+extern double d;   // distance (meters)
+extern double b;   // bearing (degrees)
+
+// Helpers exposed (used by main.cpp or other modules if needed)
+bool parseCompanionGps(const String& in, double &latOut, double &lonOut);
+double distanceMeters(double lat1, double lon1, double lat2, double lon2);
+double bearingDegrees(double lat1, double lon1, double lat2, double lon2);
+
+// Main entry points for your split logic:
+void handleTxFinished(SX1262& radio, bool& transmitFlag, int transmissionState);
+
+void handleRxAndCompute(
+  SX1262& radio,
+  double lat_proper,
+  double lon_proper
+);
+
+// Content from SendOwnInfo.cpp
+#include "SendOwnInfo.h"
+
+// Define the globals (storage lives here)
+double lat_proper = 0.0;
+double lon_proper = 0.0;
+
+void prepareAndSendOwnInfo(
+  SX1262& radio,
+  TinyGPSPlus& gps,
+  char* msg,
+  size_t msgSize,
+  int& transmissionState,
+  bool& transmitFlag
+) {
+  if (gps.location.isUpdated()) {
+    lat_proper = gps.location.lat();
+    lon_proper = gps.location.lng();
+
+    snprintf(msg, msgSize, "%.6f,%.6f\r\n", lat_proper, lon_proper);
+  } else {
+    snprintf(msg, msgSize, "No GPS\r\n");
+  }
+
+  Serial.print("Sending: ");
+  Serial.println(msg);
+
+  transmissionState = radio.startTransmit(msg);
+  transmitFlag = true;
+}
+
+// Content from SendOwnInfo.h
+#pragma once
+#include <Arduino.h>
+#include <RadioLib.h>
+#include <TinyGPSPlus.h>
+
+// Public (global) outputs from this module:
+extern double lat_proper;
+extern double lon_proper;
+
+// Main entry point:
+void prepareAndSendOwnInfo(
+  SX1262& radio,
+  TinyGPSPlus& gps,
+  char* msg,
+  size_t msgSize,
+  int& transmissionState,
+  bool& transmitFlag
+);
+
+// Content from main.cpp
+#include <Arduino.h>
+#include <RadioLib.h>
+#include <SPI.h>
+#include <TinyGPSPlus.h>
+#include <HardwareSerial.h>
+
+#include "ReceiveBuddyInfo.h"
+#include "SendOwnInfo.h"
+
+// --------------------
+// ⚠️ Adjust these pins!
+// --------------------
+static const int LORA_NSS  = 18;
+static const int LORA_DIO1 = 33;
+static const int LORA_RST  = 23;
+static const int LORA_BUSY = 32;
+
+static const float LORA_FREQ = 868.0;
+
+char msg[96];
+
+SX1262 radio = SX1262(
+  new Module(LORA_NSS, LORA_DIO1, LORA_RST, LORA_BUSY)
+);
+
+int transmissionState = RADIOLIB_ERR_NONE;
+bool transmitFlag = false;
+volatile bool operationDone = false;
+
+// Uncomment on ONE of the two nodes only
+#define INITIATING_NODE
+
+void setFlag(void) {
+  operationDone = true;
+}
+
+TinyGPSPlus gps;
+HardwareSerial GPS(1);
+
+void setup() {
+  Serial.begin(115200);
+
+  GPS.begin(9600, SERIAL_8N1, 34, 12);
+  Serial.println("Listening for GPS...");
+  delay(1000);
+
+  Serial.println("SX126x Sender starting...");
+  SPI.begin(5, 19, 27, 18);
+
+  int state = radio.begin(LORA_FREQ);
+  if (state != RADIOLIB_ERR_NONE) {
+    Serial.print("radio.begin() failed, code = ");
+    Serial.println(state);
+    while (true) { delay(1000); }
+  }
+  Serial.println("✅ Radio init OK");
+
+  radio.setDio1Action(setFlag);
+
+#if defined(INITIATING_NODE)
+  Serial.print(F("[SX1262] Sending first packet ... "));
+  transmissionState = radio.startTransmit("start transmitting");
+  transmitFlag = true;
+#else
+  Serial.print(F("[SX1262] Starting to listen ... "));
+  state = radio.startReceive();
+  if (state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while (true) { delay(10); }
+  }
+#endif
+}
+
+void loop() {
+  while (GPS.available()) {
+    gps.encode(GPS.read());
+  }
+
+  if (!operationDone) return;
+  operationDone = false;
+
+  if (transmitFlag) {
+    handleTxFinished(radio, transmitFlag, transmissionState);
+
+  } else {
+    handleRxAndCompute(radio, lat_proper, lon_proper);
+
+    // ✅ Now these are "public" globals from the modules:
+    Serial.print("MAIN sees lat_proper/lon_proper: ");
+    Serial.print(lat_proper, 6);
+    Serial.print(", ");
+    Serial.println(lon_proper, 6);
+
+    Serial.print("MAIN sees lat_companion/lon_companion: ");
+    Serial.print(lat_companion, 6);
+    Serial.print(", ");
+    Serial.println(lon_companion, 6);
+
+    Serial.print("MAIN sees d/b: ");
+    Serial.print(d, 1);
+    Serial.print(" m, ");
+    Serial.print(b, 1);
+    Serial.println(" deg");
+
+    delay(1000);
+
+    prepareAndSendOwnInfo(radio, gps, msg, sizeof(msg), transmissionState, transmitFlag);
+  }
+}
+
