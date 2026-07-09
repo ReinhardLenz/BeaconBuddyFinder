@@ -21,10 +21,10 @@ void prepareAndSendOwnInfo(
   } else {
     snprintf(msg, msgSize, "No GPS\r\n");
   }
-
+/*
   Serial.print("Sending: ");
   Serial.println(msg);
-
+*/
   transmissionState = radio.startTransmit(msg);
   transmitFlag = true;
 }

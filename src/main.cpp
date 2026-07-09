@@ -28,7 +28,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-#define INITIATING_NODE
+//#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;
@@ -90,6 +90,7 @@ void loop() {
         handleRxAndCompute(radio, lat_proper, lon_proper);
 
         // ✅ Now these are "public" globals from the modules:
+        /*'
         Serial.print("MAIN sees lat_proper/lon_proper: ");
         Serial.print(lat_proper, 6);
         Serial.print(", ");
@@ -99,12 +100,12 @@ void loop() {
         Serial.print(lat_companion, 6);
         Serial.print(", ");
         Serial.println(lon_companion, 6);
-
-        Serial.print("MAIN sees d/b: ");
+*/
+  //      Serial.print("MAIN sees d/b: ");
         Serial.print(d, 1);
-        Serial.print(" m, ");
-        Serial.print(b, 1);
-        Serial.println(" deg");
+        Serial.print(",");
+        Serial.println(b, 1);
+ //       Serial.println(" deg");
 
         delay(1000);
 

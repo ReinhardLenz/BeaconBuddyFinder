@@ -74,7 +74,7 @@ static bool properValid(double lat_proper, double lon_proper) {
 
 void handleTxFinished(SX1262& radio, bool& transmitFlag, int transmissionState) {
   if (transmissionState == RADIOLIB_ERR_NONE) {
-    Serial.println(F("transmission finished!"));
+//    Serial.println(F("transmission finished!"));
   } else {
     Serial.print(F("failed, code "));
     Serial.println(transmissionState);
@@ -94,8 +94,8 @@ void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
     return;
   }
 
-  Serial.print("Received raw: ");
-  Serial.println(str);
+//  Serial.print("Received raw: ");
+//  Serial.println(str);
 
   double latTmp, lonTmp;
   if (!parseCompanionGps(str, latTmp, lonTmp)) {
@@ -105,16 +105,16 @@ void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
 
   lat_companion = latTmp;
   lon_companion = lonTmp;
-
+/*
   Serial.print("✅ Parsed companion GPS -> Latitude = ");
   Serial.print(lat_companion, 6);
   Serial.print(" Longitude = ");
   Serial.println(lon_companion, 6);
-
+*/
   if (properValid(lat_proper, lon_proper) && companionValid()) {
     d = distanceMeters(lat_proper, lon_proper, lat_companion, lon_companion);
     b = bearingDegrees(lat_proper, lon_proper, lat_companion, lon_companion);
-
+/*
     Serial.print("📏 Distance to companion: ");
     Serial.print(d, 1);
     Serial.println(" m");
@@ -122,6 +122,7 @@ void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
     Serial.print("🧭 Bearing to companion: ");
     Serial.print(b, 1);
     Serial.println(" deg (0=N, 90=E)");
+  */  
   } else {
     Serial.println("⚠️ Cannot compute distance/bearing yet (missing valid GPS fix).");
   }
