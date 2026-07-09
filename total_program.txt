@@ -171,6 +171,7 @@ void prepareAndSendOwnInfo(
   if (gps.location.isUpdated()) {
     lat_proper = gps.location.lat();
     lon_proper = gps.location.lng();
+    
 
     snprintf(msg, msgSize, "%.6f,%.6f\r\n", lat_proper, lon_proper);
   } else {
@@ -235,7 +236,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-#define INITIATING_NODE
+//#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;

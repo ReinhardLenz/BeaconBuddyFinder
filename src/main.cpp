@@ -79,34 +79,37 @@ void loop() {
     gps.encode(GPS.read());
   }
 
-  if (!operationDone) return;
-  operationDone = false;
+  
+ if (operationDone) {
+    operationDone = false;
 
-  if (transmitFlag) {
-    handleTxFinished(radio, transmitFlag, transmissionState);
+      if (transmitFlag) {
+        handleTxFinished(radio, transmitFlag, transmissionState);
 
-  } else {
-    handleRxAndCompute(radio, lat_proper, lon_proper);
+      } else {
+        handleRxAndCompute(radio, lat_proper, lon_proper);
 
-    // ✅ Now these are "public" globals from the modules:
-    Serial.print("MAIN sees lat_proper/lon_proper: ");
-    Serial.print(lat_proper, 6);
-    Serial.print(", ");
-    Serial.println(lon_proper, 6);
+        // ✅ Now these are "public" globals from the modules:
+        Serial.print("MAIN sees lat_proper/lon_proper: ");
+        Serial.print(lat_proper, 6);
+        Serial.print(", ");
+        Serial.println(lon_proper, 6);
 
-    Serial.print("MAIN sees lat_companion/lon_companion: ");
-    Serial.print(lat_companion, 6);
-    Serial.print(", ");
-    Serial.println(lon_companion, 6);
+        Serial.print("MAIN sees lat_companion/lon_companion: ");
+        Serial.print(lat_companion, 6);
+        Serial.print(", ");
+        Serial.println(lon_companion, 6);
 
-    Serial.print("MAIN sees d/b: ");
-    Serial.print(d, 1);
-    Serial.print(" m, ");
-    Serial.print(b, 1);
-    Serial.println(" deg");
+        Serial.print("MAIN sees d/b: ");
+        Serial.print(d, 1);
+        Serial.print(" m, ");
+        Serial.print(b, 1);
+        Serial.println(" deg");
 
-    delay(1000);
+        delay(1000);
 
-    prepareAndSendOwnInfo(radio, gps, msg, sizeof(msg), transmissionState, transmitFlag);
-  }
+        prepareAndSendOwnInfo(radio, gps, msg, sizeof(msg), transmissionState, transmitFlag);
+      }
+
+    }
 }

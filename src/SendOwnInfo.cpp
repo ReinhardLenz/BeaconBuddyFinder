@@ -15,6 +15,7 @@ void prepareAndSendOwnInfo(
   if (gps.location.isUpdated()) {
     lat_proper = gps.location.lat();
     lon_proper = gps.location.lng();
+    
 
     snprintf(msg, msgSize, "%.6f,%.6f\r\n", lat_proper, lon_proper);
   } else {
