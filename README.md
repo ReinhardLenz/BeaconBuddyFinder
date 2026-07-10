@@ -191,6 +191,13 @@ Sending: 60.624836,24.828445
 - Testing out different LORA radio Parameters, like spreading etc
 - adding  pygame based python scripts, that can simultaneously plot the route of the other beacon
 
+## Graphical trace
+One T-beam is left at home connected to the computer, and the Serial outprint is running. The other T-beam is taken along for a walk. Then the distance and angle log is imported to Excel. with the formular r*sin(alpha) and r*cos(alpha) in Excel form looking like  =A46*SIN(B46*PI()/180) and  =A46*COS(B46*PI()/180) , one can then generate a scatter chart.
+
+![Diagram](images/phantom-map.jpg)
+
+A random background map was used just for illustration purpose.
+
 ## Acknowledgements
 -	RadioLib library by Jan Gromeš and contributors
 -	LILYGO for the T-Beam hardware platform
