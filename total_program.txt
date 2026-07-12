@@ -75,7 +75,7 @@ static bool properValid(double lat_proper, double lon_proper) {
 
 void handleTxFinished(SX1262& radio, bool& transmitFlag, int transmissionState) {
   if (transmissionState == RADIOLIB_ERR_NONE) {
-    Serial.println(F("transmission finished!"));
+//    Serial.println(F("transmission finished!"));
   } else {
     Serial.print(F("failed, code "));
     Serial.println(transmissionState);
@@ -95,8 +95,8 @@ void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
     return;
   }
 
-  Serial.print("Received raw: ");
-  Serial.println(str);
+//  Serial.print("Received raw: ");
+//  Serial.println(str);
 
   double latTmp, lonTmp;
   if (!parseCompanionGps(str, latTmp, lonTmp)) {
@@ -106,16 +106,16 @@ void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
 
   lat_companion = latTmp;
   lon_companion = lonTmp;
-
+/*
   Serial.print("✅ Parsed companion GPS -> Latitude = ");
   Serial.print(lat_companion, 6);
   Serial.print(" Longitude = ");
   Serial.println(lon_companion, 6);
-
+*/
   if (properValid(lat_proper, lon_proper) && companionValid()) {
     d = distanceMeters(lat_proper, lon_proper, lat_companion, lon_companion);
     b = bearingDegrees(lat_proper, lon_proper, lat_companion, lon_companion);
-
+/*
     Serial.print("📏 Distance to companion: ");
     Serial.print(d, 1);
     Serial.println(" m");
@@ -123,6 +123,7 @@ void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
     Serial.print("🧭 Bearing to companion: ");
     Serial.print(b, 1);
     Serial.println(" deg (0=N, 90=E)");
+  */  
   } else {
     Serial.println("⚠️ Cannot compute distance/bearing yet (missing valid GPS fix).");
   }
@@ -177,10 +178,10 @@ void prepareAndSendOwnInfo(
   } else {
     snprintf(msg, msgSize, "No GPS\r\n");
   }
-
+/*
   Serial.print("Sending: ");
   Serial.println(msg);
-
+*/
   transmissionState = radio.startTransmit(msg);
   transmitFlag = true;
 }
@@ -205,18 +206,201 @@ void prepareAndSendOwnInfo(
   bool& transmitFlag
 );
 
+// Content from compass.cpp
+#include "compass.h"
+
+Compass::Compass(Adafruit_BNO08x& imu)
+: m_imu(imu)
+{
+}
+
+void Compass::setReports(Adafruit_BNO08x* imu, sh2_SensorId_t reportType, long report_interval)
+{
+  if (!imu->enableReport(reportType, report_interval)) {
+    Serial.println("Could not enable report");
+  }
+}
+
+void Compass::quaternionToEuler(float qr, float qi, float qj, float qk, euler_t* ypr, bool degrees)
+{
+  float sqr = qr * qr;
+  float sqi = qi * qi;
+  float sqj = qj * qj;
+  float sqk = qk * qk;
+
+  ypr->yaw   = atan2f(2.0f * (qi * qj + qk * qr), (sqi - sqj - sqk + sqr));
+  //ypr->pitch = asinf(-2.0f * (qi * qk - qj * qr) / (sqi + sqj + sqk + sqr));
+  //ypr->roll  = atan2f(2.0f * (qj * qk + qi * qr), (-sqi - sqj + sqk + sqr));
+
+  if (degrees) {
+    ypr->yaw   *= RAD_TO_DEG;
+    //ypr->pitch *= RAD_TO_DEG;
+    //ypr->roll  *= RAD_TO_DEG;
+  }
+}
+
+void Compass::quaternionToEulerRV(sh2_RotationVectorWAcc_t* rv, euler_t* ypr, bool degrees)
+{
+  quaternionToEuler(rv->real, rv->i, rv->j, rv->k, ypr, degrees);
+}
+
+
+
+
+
+float Compass::getNorthDirection(float yaw)
+{
+  return (yaw < 0) ? (360.0f + yaw) : yaw;
+}
+
+
+
+float Compass::getYawNorthDeg() const 
+{
+   return getNorthDirection(ypr_1.yaw); 
+}
+
+
+
+void Compass::processSensor()
+{
+  delay(10);
+
+  if (m_imu.wasReset())
+  {
+    Serial.print("sensor was reset ");
+    setReports(&m_imu, SH2_ROTATION_VECTOR, 100000);
+  }
+
+  if (!m_imu.getSensorEvent(&sensorValue_1))
+  {
+    return;
+  }
+
+  switch (sensorValue_1.sensorId)
+  {
+    case SH2_ROTATION_VECTOR:
+      quaternionToEulerRV(&sensorValue_1.un.rotationVector, &ypr_1, true);
+      break;
+
+    default:
+      // ignore other reports
+      break;
+  }
+
+}
+
+// Content from compass.h
+#ifndef COMPASS_H
+#define COMPASS_H
+
+#include <Arduino.h>
+#include <Adafruit_BNO08x.h>
+
+struct euler_t {
+  float yaw;
+  float pitch;
+  float roll;
+};
+
+class Compass
+{
+public:
+  explicit Compass(Adafruit_BNO08x& imu);
+
+  void processSensor();
+
+  // Keep this helper since you're using it from main.cpp
+  static void setReports(Adafruit_BNO08x* imu, sh2_SensorId_t reportType, long report_interval);
+
+  // Make yaw available to main.cpp (degrees)
+  float getYawDeg() const { return ypr_1.yaw; }
+  float getYawNorthDeg() const;
+
+  private:
+euler_t ypr_1{};
+
+  Adafruit_BNO08x& m_imu;
+  sh2_SensorValue_t sensorValue_1{};
+
+  static void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* ypr, bool degrees);
+  static void quaternionToEuler(float qr, float qi, float qj, float qk, euler_t* ypr, bool degrees);
+
+  static float getNorthDirection(float yaw);
+};
+
+#endif
+
 // Content from main.cpp
 #include <Arduino.h>
 #include <RadioLib.h>
+#include <Adafruit_BNO08x.h>
 #include <SPI.h>
 #include <TinyGPSPlus.h>
 #include <HardwareSerial.h>
-
+#include <config.h>
+#include "compass.h"
 #include "ReceiveBuddyInfo.h"
 #include "SendOwnInfo.h"
 
 // --------------------
-// ⚠️ Adjust these pins!
+// from BNO085 UART
+// --------------------
+constexpr gpio_num_t PIN_BNO_RESET = GPIO_NUM_13;
+
+Adafruit_BNO08x bno08x(PIN_BNO_RESET);
+
+Compass compass(bno08x);
+
+constexpr char PROGRAM_NAME[] = "Stage 1A UART Diagnostic";
+constexpr char VERSION[]      = "0.1.0";
+constexpr char BUILD_DATE[]   = __DATE__;
+constexpr char BUILD_TIME[]   = __TIME__;
+
+enum class ErrorCode
+{
+    None,
+    UART,
+    BNO_NotFound,
+    EnableReport,
+    ProductID,
+};
+
+void fatalError(ErrorCode code)
+{
+    Serial.println();
+    Serial.println("========== FATAL ERROR ==========");
+
+    switch (code)
+    {
+        case ErrorCode::UART:
+            Serial.println("Unable to communicate with BNO085.");
+            break;
+
+        case ErrorCode::BNO_NotFound:
+            Serial.println("BNO085 not detected.");
+            break;
+
+        case ErrorCode::EnableReport:
+            Serial.println("Could not enable report.");
+            break;
+
+        default:
+            Serial.println("Unknown error.");
+            break;
+    }
+
+    while (true)
+    {
+        digitalWrite(PIN_STATUS_LED, HIGH);
+        delay(BLINK_DELAY);
+        digitalWrite(PIN_STATUS_LED, LOW);
+        delay(BLINK_DELAY);
+    }
+}
+
+// --------------------
+// pins for Lora
 // --------------------
 static const int LORA_NSS  = 18;
 static const int LORA_DIO1 = 33;
@@ -246,7 +430,34 @@ TinyGPSPlus gps;
 HardwareSerial GPS(1);
 
 void setup() {
-  Serial.begin(115200);
+// --------------------
+// start BNO085 UART
+// --------------------
+
+    Serial.begin(PC_BAUD);
+    Serial2.begin(BNO_BAUD, SERIAL_8N1, PIN_BNO_RX, PIN_BNO_TX);
+
+    while (!Serial)  delay(RESET_TIME_MS);
+    
+    Serial.println("Adafruit BNO08x Accelerometer test!");
+
+    if (!bno08x.begin_UART(&Serial2))
+    {
+        fatalError(ErrorCode::BNO_NotFound);
+    }
+
+    Serial.println("BNO08x Found!");
+
+    Compass::setReports(&bno08x, SH2_ROTATION_VECTOR, 100000);
+
+    Serial.println("Reading events");
+    delay(100);
+}
+
+
+// --------------------
+// end BNO085 UART
+// --------------------
 
   GPS.begin(9600, SERIAL_8N1, 34, 12);
   Serial.println("Listening for GPS...");
@@ -283,39 +494,48 @@ void setup() {
 }
 
 void loop() {
+
+
   while (GPS.available()) {
     gps.encode(GPS.read());
   }
 
-  if (!operationDone) return;
-  operationDone = false;
+ if (operationDone) {
+    operationDone = false;
 
-  if (transmitFlag) {
-    handleTxFinished(radio, transmitFlag, transmissionState);
+      if (transmitFlag) {
+        handleTxFinished(radio, transmitFlag, transmissionState);
 
-  } else {
-    handleRxAndCompute(radio, lat_proper, lon_proper);
+      } else {
+        handleRxAndCompute(radio, lat_proper, lon_proper);
 
-    // ✅ Now these are "public" globals from the modules:
-    Serial.print("MAIN sees lat_proper/lon_proper: ");
-    Serial.print(lat_proper, 6);
-    Serial.print(", ");
-    Serial.println(lon_proper, 6);
+        // ✅ Now these are "public" globals from the modules:
+        /*'
+        Serial.print("MAIN sees lat_proper/lon_proper: ");
+        Serial.print(lat_proper, 6);
+        Serial.print(", ");
+        Serial.println(lon_proper, 6);
 
-    Serial.print("MAIN sees lat_companion/lon_companion: ");
-    Serial.print(lat_companion, 6);
-    Serial.print(", ");
-    Serial.println(lon_companion, 6);
+        Serial.print("MAIN sees lat_companion/lon_companion: ");
+        Serial.print(lat_companion, 6);
+        Serial.print(", ");
+        Serial.println(lon_companion, 6);
+*/
+  //      Serial.print("MAIN sees d/b: ");
+        Serial.print(d, 1);
+        Serial.print(",");
+        Serial.println(b, 1);
+ //       Serial.println(" deg");
 
-    Serial.print("MAIN sees d/b: ");
-    Serial.print(d, 1);
-    Serial.print(" m, ");
-    Serial.print(b, 1);
-    Serial.println(" deg");
+        compass.processSensor();
+        Serial.print("Yaw  ");
+        Serial.println(compass.getYawNorthDeg());
 
-    delay(1000);
+        delay(1000);
 
-    prepareAndSendOwnInfo(radio, gps, msg, sizeof(msg), transmissionState, transmitFlag);
-  }
+        prepareAndSendOwnInfo(radio, gps, msg, sizeof(msg), transmissionState, transmitFlag);
+      }
+
+    }
 }
 

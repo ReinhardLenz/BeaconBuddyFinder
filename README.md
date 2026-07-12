@@ -192,7 +192,7 @@ Sending: 60.624836,24.828445
 - adding  pygame based python scripts, that can simultaneously plot the route of the other beacon
 
 ## Graphical trace
-One T-beam is left at home connected to the computer, and the Serial outprint is running. The other T-beam is taken along for a walk. Then the distance and angle log is imported to Excel. with the formular r*sin(alpha) and r*cos(alpha) in Excel form looking like  =A46*SIN(B46*PI()/180) and  =A46*COS(B46*PI()/180) , one can then generate a scatter chart.
+One T-beam is left at home connected to the computer, and the Serial outprint is running. The other T-beam is taken along for a walk. Then the distance and angle log is imported to Excel. with the formular r*sin(alpha) and r*cos(alpha) in Excel form looking like  =A46xSIN(B46xPI()/180) and  =A46xCOS(B46xPI()/180) , one can then generate a scatter chart.
 
 ![Diagram](images/phantom-map.jpg)
 

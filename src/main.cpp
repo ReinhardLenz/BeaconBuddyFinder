@@ -1,14 +1,72 @@
 #include <Arduino.h>
 #include <RadioLib.h>
+#include <Adafruit_BNO08x.h>
 #include <SPI.h>
 #include <TinyGPSPlus.h>
 #include <HardwareSerial.h>
-
+#include <config.h>
+#include "compass.h"
 #include "ReceiveBuddyInfo.h"
 #include "SendOwnInfo.h"
 
 // --------------------
-// ⚠️ Adjust these pins!
+// from BNO085 UART
+// --------------------
+constexpr gpio_num_t PIN_BNO_RESET = GPIO_NUM_13;
+
+Adafruit_BNO08x bno08x(PIN_BNO_RESET);
+
+Compass compass(bno08x);
+
+constexpr char PROGRAM_NAME[] = "Stage 1A UART Diagnostic";
+constexpr char VERSION[]      = "0.1.0";
+constexpr char BUILD_DATE[]   = __DATE__;
+constexpr char BUILD_TIME[]   = __TIME__;
+
+enum class ErrorCode
+{
+    None,
+    UART,
+    BNO_NotFound,
+    EnableReport,
+    ProductID,
+};
+
+void fatalError(ErrorCode code)
+{
+    Serial.println();
+    Serial.println("========== FATAL ERROR ==========");
+
+    switch (code)
+    {
+        case ErrorCode::UART:
+            Serial.println("Unable to communicate with BNO085.");
+            break;
+
+        case ErrorCode::BNO_NotFound:
+            Serial.println("BNO085 not detected.");
+            break;
+
+        case ErrorCode::EnableReport:
+            Serial.println("Could not enable report.");
+            break;
+
+        default:
+            Serial.println("Unknown error.");
+            break;
+    }
+
+    while (true)
+    {
+        digitalWrite(PIN_STATUS_LED, HIGH);
+        delay(BLINK_DELAY);
+        digitalWrite(PIN_STATUS_LED, LOW);
+        delay(BLINK_DELAY);
+    }
+}
+
+// --------------------
+// pins for Lora
 // --------------------
 static const int LORA_NSS  = 18;
 static const int LORA_DIO1 = 33;
@@ -38,7 +96,31 @@ TinyGPSPlus gps;
 HardwareSerial GPS(1);
 
 void setup() {
-  Serial.begin(115200);
+// --------------------
+// start BNO085 UART
+// --------------------
+
+    Serial.begin(PC_BAUD);
+    Serial2.begin(BNO_BAUD, SERIAL_8N1, PIN_BNO_RX, PIN_BNO_TX);
+
+    while (!Serial)  delay(RESET_TIME_MS);
+    
+    Serial.println("Adafruit BNO08x Accelerometer test!");
+
+    if (!bno08x.begin_UART(&Serial2))
+    {
+        fatalError(ErrorCode::BNO_NotFound);
+    }
+
+    Serial.println("BNO08x Found!");
+
+    Compass::setReports(&bno08x, SH2_ROTATION_VECTOR, 100000);
+
+    Serial.println("Reading events");
+    delay(100);
+// --------------------
+// end BNO085 UART
+// --------------------
 
   GPS.begin(9600, SERIAL_8N1, 34, 12);
   Serial.println("Listening for GPS...");
@@ -75,11 +157,12 @@ void setup() {
 }
 
 void loop() {
+
+
   while (GPS.available()) {
     gps.encode(GPS.read());
   }
 
-  
  if (operationDone) {
     operationDone = false;
 
@@ -106,6 +189,10 @@ void loop() {
         Serial.print(",");
         Serial.println(b, 1);
  //       Serial.println(" deg");
+
+        compass.processSensor();
+        Serial.print("Yaw  ");
+        Serial.println(compass.getYawNorthDeg());
 
         delay(1000);
 
