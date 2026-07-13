@@ -4,7 +4,7 @@ A minimal two-device project using **two LILYGO T-Beam V1.2 (ESP32 + SX1262)** b
 
 The program is  a "ping - pong" program between two ESP32 (T-BEAM) with LORA communication. Both T-BEAM transmit regularly their GPS position to each other. 
 
-Each LILYGO T-Beam Meshtastic LORA32 915MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 provides the bearing of the device in relation. The two components are interconnected to facilitate data exchange and power supply. The BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it can calculate the direction in which the other buddy device is located. This direction can then be displayed using an output device. A so-called WS2812B LED Pixel Individually Addressable Ring is planned for this function.
+Each LILYGO T-Beam Meshtastic LORA32 915MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it now can calculate the direction in which the other buddy device is located. This direction can then be displayed using an output device. A so-called WS2812B LED Pixel Individually Addressable Ring is planned for this function.
 
 ---
 
