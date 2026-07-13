@@ -28,7 +28,7 @@ In this project, LoRa is used to send a simple text message from one board to an
 
 ## **Component List**
 
-### **LILYGO T-Beam Meshtastic LORA32 915MHz**
+### **LILYGO T-Beam Meshtastic LORA32 868MHz**
 
 * **Component Name:** LILYGO T-Beam Meshtastic LORA32 915MHz  
 * **Description:** A microcontroller module with LoRa communication capabilities, suitable for IoT applications.  
@@ -39,6 +39,9 @@ In this project, LoRa is used to send a simple text message from one board to an
 * **Component Name:** BNO085  
 * **Description:** A 9-axis sensor providing orientation, acceleration, and gyroscopic data.  
 * **Pins:** VCC, GND, SCL/SCK/RX, SDA/MISO/TX, ADR/MOSI, CS, INT, RST, PS1, PS0
+
+![Diagram](images/GY-BNO085.webp)
+
 
 ## **Wiring Details**
 
