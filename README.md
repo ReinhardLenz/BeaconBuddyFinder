@@ -4,7 +4,7 @@ A minimal two-device project using **two LILYGO T-Beam V1.2 (ESP32 + SX1262)** b
 
 The program is  a "ping - pong" program between two ESP32 (T-BEAM) with LORA communication. Both T-BEAM transmit regularly their GPS position to each other. 
 
-Each LILYGO T-Beam Meshtastic LORA32 915MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it now can calculate the direction in which the other buddy device is located. This direction can then be displayed using an output device. A so-called WS2812B LED Pixel Individually Addressable Ring is planned for this function.
+Each LILYGO T-Beam Meshtastic LORA32 868MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it now can calculate the direction in which the other buddy device is located. This direction can then be displayed using an output device. A so-called WS2812B LED Pixel Individually Addressable Ring is planned for this function.
 
 ---
 
@@ -30,7 +30,7 @@ In this project, LoRa is used to send a simple text message from one board to an
 
 ### **LILYGO T-Beam Meshtastic LORA32 868MHz**
 
-* **Component Name:** LILYGO T-Beam Meshtastic LORA32 915MHz  
+* **Component Name:** LILYGO T-Beam Meshtastic LORA32 868MHz  
 * **Description:** A microcontroller module with LoRa communication capabilities, suitable for IoT applications.  
 * **Pins:** TX, RX, 23, 4, 0, GND, 3V3, SCL/22, SDA/21, 3.3V, LoRa2, 5V, 2, 13, 14, 25, 33, 32, 35, 15, RST, VN, VP
 ![Diagram](images/el-pin-meanings.jpg)
@@ -48,7 +48,7 @@ In this project, LoRa is used to send a simple text message from one board to an
 
 ## **Wiring Details**
 
-### **LILYGO T-Beam Meshtastic LORA32 915MHz**
+### **LILYGO T-Beam Meshtastic LORA32 868MHz**
 
 * **Pin 15** is connected to **BNO085 SDA/MISO/TX**.  
 * **Pin 14** is connected to **BNO085 SCL/SCK/RX**.  
@@ -188,7 +188,7 @@ Sending: 60.624836,24.828445
   - PMU: **AXP2101**
   - USB-UART: **CH9102**
   - Flash: 4MB, PSRAM: 8MB
-  - Marking: *LILYGO 868/915 MHz Model: LORA32 SX1262*
+  - Marking: *LILYGO 868 MHz Model: LORA32 SX1262*
 
 ### Region / Frequency
 - **Europe (EU): 868 MHz** is used in the code:
