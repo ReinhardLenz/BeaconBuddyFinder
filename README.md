@@ -33,6 +33,9 @@ In this project, LoRa is used to send a simple text message from one board to an
 * **Component Name:** LILYGO T-Beam Meshtastic LORA32 915MHz  
 * **Description:** A microcontroller module with LoRa communication capabilities, suitable for IoT applications.  
 * **Pins:** TX, RX, 23, 4, 0, GND, 3V3, SCL/22, SDA/21, 3.3V, LoRa2, 5V, 2, 13, 14, 25, 33, 32, 35, 15, RST, VN, VP
+![Diagram](images/el-pin-meanings.jpg)
+
+
 
 ### **BNO085**
 
@@ -254,6 +257,5 @@ A random background map was used just for illustration purpose.
 ![Diagram](images/dimensions.jpg)
 3.
 
-![Diagram](images/el-pin-meanings.jpg)
 
 
