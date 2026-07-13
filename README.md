@@ -22,7 +22,7 @@ In this project, LoRa is used to send a simple text message from one board to an
 ---
 
 
-![Diagram](circuit_imageT-beam_BNO085.png)
+![Diagram](images/circuit_imageT-beam_BNO085.png)
 
 # **Circuit Documentation**
 
