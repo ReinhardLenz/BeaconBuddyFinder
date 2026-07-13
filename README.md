@@ -206,6 +206,8 @@ Sending: 60.624836,24.828445
 	lib_deps =
 	  jgromes/RadioLib
 	Build & Flash (PlatformIO)
+  BNO085- related library
+  Adafruit BNO08x
 
 ## Prerequisites
 - Install VS Code
@@ -232,10 +234,10 @@ Sending: 60.624836,24.828445
 -	Verify correct SX1262 pin mapping (RST/BUSY/DIO1/NSS)
 
 ## Future Improvements
--	Add BNO085 IMU sensor and compass
 -	Add a third Lora device, and develop triangulation or GPS calibration
 - Testing out different LORA radio Parameters, like spreading etc
 - adding  pygame based python scripts, that can simultaneously plot the route of the other beacon
+-  adding WS2812B LED Pixel output device
 
 ## Graphical trace
 One T-beam is left at home connected to the computer, and the Serial outprint is running. The other T-beam is taken along for a walk. Then the distance and angle log is imported to Excel. with the formular r*sin(alpha) and r*cos(alpha) in Excel form looking like  =A46xSIN(B46xPI()/180) and  =A46xCOS(B46xPI()/180) , one can then generate a scatter chart.
@@ -247,6 +249,8 @@ A random background map was used just for illustration purpose.
 ## Acknowledgements
 -	RadioLib library by Jan Gromeš and contributors
 -	LILYGO for the T-Beam hardware platform
+- Adafruit BNO08x library
+
 ## License
 -	This project is licensed under the GNU License. See the LICENSE file for details.
 
