@@ -17,7 +17,7 @@ Think of it like “walkie-talkies for tiny data”:
 - ✅ Uses very little power
 - ✅ Sends small messages (not suitable for high-speed data like Wi‑Fi)
 
-In this project, LoRa is used to send a simple text message from one board to another.
+In this project, LoRa is used to send a the GPS coordinates from one board to another.
 
 ---
 
@@ -99,7 +99,7 @@ In this project, LoRa is used to send a simple text message from one board to an
 ## Software Overview
 
 This repository contains the program "main" using the **RadioLib** library to control the **SX1262 LoRa radio** on the T-Beam.
-In this branch GPS_bearing, the distance and bearing betwene "self" T-BEAM and "companion T-BEAM" is calculated.
+In this branch GPS_bearing, the distance and bearing between "self" T-BEAM and "companion T-BEAM" is calculated.
 
 ## Program Logic (How it works)
 
@@ -255,8 +255,8 @@ Sending: 60.624836,24.828445
 -Baud rate: 115200
 
 ## Usage
--	Flash Receiver firmware to one T-Beam.
--	Flash Sender firmware to the other T-Beam.
+-	Flash Receiver firmware to one T-Beam. (#define INITIATING_NODE line is active e.g. not commented out)
+-	Flash Sender firmware to the other T-Beam. (//#define INITIATING_NODE line is commented out like this)
 -	Power both devices (USB or battery).
 -	Ensure both use the same frequency (868.0)
 -	Ensure LoRa parameters match (SF/BW/CR if you set them)
@@ -267,7 +267,6 @@ Sending: 60.624836,24.828445
 -	Add a third Lora device, and develop triangulation or GPS calibration
 - Testing out different LORA radio Parameters, like spreading etc
 - adding  pygame based python scripts, that can simultaneously plot the route of the other beacon
--  adding WS2812B LED Pixel output device
 
 ## Graphical trace
 One T-beam is left at home connected to the computer, and the Serial outprint is running. The other T-beam is taken along for a walk. Then the distance and angle log is imported to Excel. with the formular r*sin(alpha) and r*cos(alpha) in Excel form looking like  =A46xSIN(B46xPI()/180) and  =A46xCOS(B46xPI()/180) , one can then generate a scatter chart.
