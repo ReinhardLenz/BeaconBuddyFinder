@@ -208,11 +208,12 @@ void loop() {
         compass.processSensor();
         Serial.print("Yaw  ");
         Serial.println(compass.getYawNorthDeg());
-        const float yawNorth = compass.getYawNorthDeg();
-        ledRing.showDirection(yawNorth, CRGB::White);
 
 //      Normalize the bearing to 0-360 degrees  
         BuddyBearing = wrap360((compass.getYawNorthDeg()) - b);
+        ledRing.showDirection(BuddyBearing , CRGB::White);
+
+
 
         delay(1000);
 
