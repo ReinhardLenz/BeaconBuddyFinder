@@ -6,7 +6,7 @@
 extern double lat_companion;
 extern double lon_companion;
 extern double d;   // distance (meters)
-extern double b;   // bearing (degrees)
+extern float b;   // bearing (degrees)
 
 // Helpers exposed (used by main.cpp or other modules if needed)
 bool parseCompanionGps(const String& in, double &latOut, double &lonOut);

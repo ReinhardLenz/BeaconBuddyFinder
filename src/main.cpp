@@ -8,6 +8,7 @@
 #include "compass.h"
 #include "ReceiveBuddyInfo.h"
 #include "SendOwnInfo.h"
+#include "LED.h"
 
 // --------------------
 // from BNO085 UART
@@ -17,6 +18,10 @@ constexpr gpio_num_t PIN_BNO_RESET = GPIO_NUM_13;
 Adafruit_BNO08x bno08x(PIN_BNO_RESET);
 
 Compass compass(bno08x);
+
+
+// LED ring module
+LedRing ledRing(LED_COUNT, static_cast<uint8_t>(PIN_LED_RING));
 
 constexpr char PROGRAM_NAME[] = "Stage 1A UART Diagnostic";
 constexpr char VERSION[]      = "0.1.0";
@@ -75,6 +80,8 @@ static const int LORA_BUSY = 32;
 
 static const float LORA_FREQ = 868.0;
 
+float BuddyBearing = 0.0f;
+
 char msg[96];
 
 SX1262 radio = SX1262(
@@ -95,6 +102,13 @@ void setFlag(void) {
 TinyGPSPlus gps;
 HardwareSerial GPS(1);
 
+
+static inline float wrap360(float deg) {
+  deg = fmod(deg, 360.0);
+  if (deg < 0) deg += 360.0;
+  return deg;
+}
+
 void setup() {
 // --------------------
 // start BNO085 UART
@@ -105,7 +119,7 @@ void setup() {
 
     while (!Serial)  delay(RESET_TIME_MS);
     
-    Serial.println("Adafruit BNO08x Accelerometer test!");
+    Serial.println("start Adafruit BNO08x test!");
 
     if (!bno08x.begin_UART(&Serial2))
     {
@@ -121,7 +135,6 @@ void setup() {
 // --------------------
 // end BNO085 UART
 // --------------------
-
   GPS.begin(9600, SERIAL_8N1, 34, 12);
   Serial.println("Listening for GPS...");
   delay(1000);
@@ -154,6 +167,8 @@ void setup() {
     while (true) { delay(10); }
   }
 #endif
+  ledRing.begin(LED_BRIGHTNESS);
+
 }
 
 void loop() {
@@ -193,6 +208,11 @@ void loop() {
         compass.processSensor();
         Serial.print("Yaw  ");
         Serial.println(compass.getYawNorthDeg());
+        const float yawNorth = compass.getYawNorthDeg();
+        ledRing.showDirection(yawNorth, CRGB::White);
+
+//      Normalize the bearing to 0-360 degrees  
+        BuddyBearing = wrap360((compass.getYawNorthDeg()) - b);
 
         delay(1000);
 

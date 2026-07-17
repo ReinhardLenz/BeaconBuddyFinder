@@ -5,7 +5,7 @@
 double lat_companion = 0.0;
 double lon_companion = 0.0;
 double d = 0.0;
-double b = 0.0;
+float b = 0.0f;
 
 static inline double deg2rad(double deg) { return deg * (M_PI / 180.0); }
 static inline double rad2deg(double rad) { return rad * (180.0 / M_PI); }

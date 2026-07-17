@@ -4,7 +4,7 @@ A minimal two-device project using **two LILYGO T-Beam V1.2 (ESP32 + SX1262)** b
 
 The program is  a "ping - pong" program between two ESP32 (T-BEAM) with LORA communication. Both T-BEAM transmit regularly their GPS position to each other. 
 
-Each LILYGO T-Beam Meshtastic LORA32 868MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it now can calculate the direction in which the other buddy device is located. This direction can then be displayed using an output device. A so-called WS2812B LED Pixel Individually Addressable Ring is planned for this function.
+Each LILYGO T-Beam Meshtastic LORA32 868MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it now can calculate the direction in which the other buddy device is located. This direction is then displayed using a so-called WS2812B LED Pixel Individually Addressable Ring.
 
 ---
 
@@ -22,48 +22,78 @@ In this project, LoRa is used to send a simple text message from one board to an
 ---
 
 
-![Diagram](images/circuit_imageT-beam_BNO085.png)
+![Diagram](images/circuit_BNO085_T-beam_LED-ring.png)
 
 # **Circuit Documentation**
 
 ## **Component List**
 
-### **LILYGO T-Beam Meshtastic LORA32 868MHz**
-
-* **Component Name:** LILYGO T-Beam Meshtastic LORA32 868MHz  
-* **Description:** A microcontroller module with LoRa communication capabilities, suitable for IoT applications.  
-* **Pins:** TX, RX, 23, 4, 0, GND, 3V3, SCL/22, SDA/21, 3.3V, LoRa2, 5V, 2, 13, 14, 25, 33, 32, 35, 15, RST, VN, VP
+1. **LILYGO T-Beam Meshtastic LORA32 915MHz**  
+   * **Description**: A microcontroller module with LoRa capabilities, used for wireless communication.  
+   * **Pins**: TX, RX, 23, 4, 0, GND, 3V3, SCL/22, SDA/21, 3.3V, LoRa2, 5V, 2, 13, 14, 25, 33, 32, 35, 15, RST, VN, VP
 ![Diagram](images/el-pin-meanings.jpg)
 
 
 
-### **BNO085**
-
-* **Component Name:** BNO085  
-* **Description:** A 9-axis sensor providing orientation, acceleration, and gyroscopic data.  
-* **Pins:** VCC, GND, SCL/SCK/RX, SDA/MISO/TX, ADR/MOSI, CS, INT, RST, PS1, PS0
+2. **BNO085**  
+   * **Description**: A 9-axis sensor providing orientation, acceleration, and gyroscopic data.  
+   * **Pins**: VCC, GND, SCL/SCK/RX, SDA/MISO/TX, ADR/MOSI, CS, INT, RST, PS1, PS0 
 
 ![Diagram](images/GY-BNO085.webp)
+
+3. **NEOPIXEL WS2812 45 LED Ring**  
+   * **Description**: A ring of 45 individually addressable RGB LEDs.  each LED in the ring has its own WS2812, which contains a small IC, which receives a serial data stream, extracts the 24bits for itself and forwards remaining bits to next LED. The address of an LED is it's order in the chain, bits are encoded by the high-time vs low-time of pulses as a single-wire, timing-based protocol (not UART). Data line: DOUT of LED n → DIN of LED n+1 
+   * **Pins**: GND, D1, 5V, D0
+   * 45LED 120mm 102mm 9mm
+   * RGB Full Color Highlighting
+
+
+
+4. **Electrolytic Capacitor**  
+   * **Description**: A capacitor used for power smoothing.  
+   * **Properties**: Capacitance of 0.00047 Farads  
+   * **Pins**: \-, \+  
+5. **Resistor**  
+   * **Description**: A resistor used for current limiting.  
+   * **Properties**: Resistance of 330 Ohms  
+   * **Pins**: pin1, pin2 (note:  stripe marking and for most through‑hole electrolytic capacitors, the shorter lead is the negative (−) lead.)
+
+
 
 
 ## **Wiring Details**
 
-### **LILYGO T-Beam Meshtastic LORA32 868MHz**
+### **LILYGO T-Beam Meshtastic LORA32 915MHz**
 
 * **Pin 15** is connected to **BNO085 SDA/MISO/TX**.  
 * **Pin 14** is connected to **BNO085 SCL/SCK/RX**.  
-* **Pin 3V3** is connected to **BNO085 VCC** and **PS1**.  
-* **Pin GND** is connected to **BNO085 GND** and **PS0**.
+* **Pin 3V3** is connected to **BNO085 VCC** and **BNO085 PS1**.  
+* **Pin GND** is connected to **BNO085 GND**, **BNO085 PS0**, and **NEOPIXEL WS2812 45 LED Ring GND**.  
+* **Pin 5V** is connected to **NEOPIXEL WS2812 45 LED Ring 5V**.  
+* **Pin 13** is connected to **Resistor pin2**.
 
-### ---
+### **BNO085**
 
-**BNO085**
+* **SDA/MISO/TX** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 15**.  
+* **SCL/SCK/RX** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 14**.  
+* **VCC** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 3V3** and **PS1**.  
+* **GND** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin GND** and **PS0**.
 
-* **Pin SDA/MISO/TX** is connected to **LILYGO T-Beam Pin 15**.  
-* **Pin SCL/SCK/RX** is connected to **LILYGO T-Beam Pin 14**.  
-* **Pin VCC** is connected to **LILYGO T-Beam Pin 3V3** and **PS1**.  
-* **Pin GND** is connected to **LILYGO T-Beam Pin GND** and **PS0**.
+### **NEOPIXEL WS2812 45 LED Ring**
 
+* **GND** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin GND** and **Electrolytic Capacitor \-**.  
+* **5V** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 5V** and **Electrolytic Capacitor \+**.  
+* **D1** is connected to **Resistor pin1**.
+
+### **Electrolytic Capacitor**
+
+* **\-** is connected to **NEOPIXEL WS2812 45 LED Ring GND**.  
+* **\+** is connected to **NEOPIXEL WS2812 45 LED Ring 5V**.
+
+### **Resistor**
+
+* **pin1** is connected to **NEOPIXEL WS2812 45 LED Ring D1**.  
+* **pin2** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 13**.
 
 
 ## Software Overview
@@ -250,6 +280,9 @@ A random background map was used just for illustration purpose.
 -	RadioLib library by Jan Gromeš and contributors
 -	LILYGO for the T-Beam hardware platform
 - Adafruit BNO08x library
+- Wolles Elektronikkiste
+[Wolles Elektronikkiste](https://wolles-elektronikkiste.de/en/bno08x-9-dof-imus)
+
 
 ## License
 -	This project is licensed under the GNU License. See the LICENSE file for details.
@@ -261,5 +294,6 @@ A random background map was used just for illustration purpose.
 ![Diagram](images/dimensions.jpg)
 3.
 
+![Visitor Count](https://komarev.com/ghpvc/?username=ReinhardLenz&repo=BeaconBuddyFinder&color=green)
 
 

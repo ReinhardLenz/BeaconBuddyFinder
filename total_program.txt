@@ -409,6 +409,8 @@ static const int LORA_BUSY = 32;
 
 static const float LORA_FREQ = 868.0;
 
+double BuddyBearing=0;
+
 char msg[96];
 
 SX1262 radio = SX1262(
@@ -452,9 +454,6 @@ void setup() {
 
     Serial.println("Reading events");
     delay(100);
-}
-
-
 // --------------------
 // end BNO085 UART
 // --------------------
@@ -530,6 +529,8 @@ void loop() {
         compass.processSensor();
         Serial.print("Yaw  ");
         Serial.println(compass.getYawNorthDeg());
+
+        BuddyBearing=compass.getYawNorthDeg()-b;
 
         delay(1000);
 
