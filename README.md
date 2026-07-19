@@ -5,18 +5,17 @@
 
 # T-Beam LoRa Link (Sender + Receiver) — RadioLib (SX1262, 868 MHz)
 
-
-
 ## The main idea:
 It’s like a “hot-and-cold” game, but instead of saying “warmer,” it simply points you in the right direction with a light.
-
  
-Imagine two friends each carrying a small “helper gadget” when they go hiking, exploring, or looking for something.
+Imagine two friends each carrying a small “helper gadget” when they go hiking, exploring, or looking for something. 
+
+It is "off grid", not depending on access to phone or internet  
 
 
 ## What the gadget does:
 - ✅ It knows which way you are facing
-Like a super-compass, it can tell whether you’re pointing toward north, south, east, or west.
+Like a compass, it can tell whether you’re pointing toward north, south, east, or west. 
 
  
 - ✅ It knows where your buddy is (roughly)
@@ -37,17 +36,17 @@ Then it figures out: “Your buddy is that way.”
 Instead of showing a map or numbers, it uses a circle of lights:
 
  
-- ✅ If the buddy is in front of you, the light at the “front” glows.
-If they’re to your left, a light on the left glows.
-If they’re behind you, a light at the back glows.
-So you just turn until the “go that way” light is in front, then walk forward
+- ✅ If the buddy is in front of you, the LED at the “front” glows.
+If they’re to your left, the LED on the left glows.
+If they’re behind you, a LED at the back glows.
+So you just turn until the “go that way” LED is in front, then walk forward
  
 ## How you’d use it in real life:
 
 ### Situation A: Two people in the woods/mountains/desert
 Both people carry one gadget.
-If you get separated, look at your lights.
-Turn your body until the “correct” light is at the front.
+If you get separated, look at your LED compass ring ring.
+Turn your body until the “correct” LED is at the front.
 Walk that way.
 Check again sometimes (because your buddy may also be moving).
 ### Situation B: Finding your dog
