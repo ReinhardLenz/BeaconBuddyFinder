@@ -9,47 +9,38 @@
 
 ## The main idea:
 It’s like a “hot-and-cold” game, but instead of saying “warmer,” it simply points you in the right direction with a light.
- 
----
+
  
 Imagine two friends each carrying a small “helper gadget” when they go hiking, exploring, or looking for something.
- 
----
+
 
 ## What the gadget does:
-It knows which way you are facing
+- ✅ It knows which way you are facing
 Like a super-compass, it can tell whether you’re pointing toward north, south, east, or west.
+
  
----
- 
-It knows where your buddy is (roughly)
+- ✅ It knows where your buddy is (roughly)
 Your friend’s gadget and your gadget can “talk” to each other from far away, even if you can’t see each other.
+
  
----
- 
-It tells you which direction to walk to reach them
+- ✅ It tells you which direction to walk to reach them
 Your gadget compares:
+
  
----
- 
-where you are,
+- ✅ where you are,
 where your buddy is,
 and which way you’re facing,
 Then it figures out: “Your buddy is that way.”
+
  
----
- 
-It shows the direction in a super simple way
+- ✅ It shows the direction in a super simple way
 Instead of showing a map or numbers, it uses a circle of lights:
+
  
----
- 
-If the buddy is in front of you, the light at the “front” glows.
+- ✅ If the buddy is in front of you, the light at the “front” glows.
 If they’re to your left, a light on the left glows.
 If they’re behind you, a light at the back glows.
-So you just turn until the “go that way” light is in front, then walk forward.
- 
----
+So you just turn until the “go that way” light is in front, then walk forward
  
 ## How you’d use it in real life:
 
@@ -88,8 +79,15 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 
 ---
 
+## Electrical circuit diagram
 
 ![Diagram](images/circuit_BNO085_T-beam_LED-ring.png)
+
+## Photo
+
+![Diagram](images/T-Beam-2x-photo_test_arr.jpg)
+
+
 
 # **Circuit Documentation**
 
