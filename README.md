@@ -3,7 +3,7 @@
 
 
 
-# T-Beam LoRa Link (Sender + Receiver) — RadioLib (SX1262, 868 MHz)
+# Buddy finder compass LoRa Link (Sender + Receiver)
 
 ## The main idea:
 It’s like a “hot-and-cold” game, but instead of saying “warmer,” it simply points you in the right direction with a light.
@@ -64,7 +64,7 @@ A minimal two-device project using **two LILYGO T-Beam V1.2 (ESP32 + SX1262)** b
 
 The program is  a "ping - pong" program between two ESP32 (T-BEAM) with LORA communication. Both T-BEAM transmit regularly their GPS position to each other. 
 
-Each LILYGO T-Beam Meshtastic LORA32 868MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it now can calculate the direction in which the other buddy device is located. This direction is then displayed using a so-called WS2812B LED Pixel Individually Addressable Ring.
+Each LILYGO T-Beam LORA32 868MHz module is connected  with a BNO085 sensor through a UART bus. The LILYGO T-Beam serves as the main microcontroller and communication module, while the BNO085 sensor measures the spatial orientation of the device, i.e., where the device itself is pointing in relation to the North Pole.  Because the device knows its own orientation and also the location of the second "buddy" device, it now can calculate the direction in which the other buddy device is located. This direction is then displayed using a so-called WS2812B LED Pixel Individually Addressable Ring.
 
 ---
 
@@ -95,7 +95,7 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 
 ## **Component List**
 
-1. **LILYGO T-Beam Meshtastic LORA32 915MHz**  
+1. **LILYGO T-Beam LORA32 915MHz**  
    * **Description**: A microcontroller module with LoRa capabilities, used for wireless communication.  
    * **Pins**: TX, RX, 23, 4, 0, GND, 3V3, SCL/22, SDA/21, 3.3V, LoRa2, 5V, 2, 13, 14, 25, 33, 32, 35, 15, RST, VN, VP
 ![Diagram](images/el-pin-meanings.jpg)
@@ -130,7 +130,7 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 
 ## **Wiring Details**
 
-### **LILYGO T-Beam Meshtastic LORA32 915MHz**
+### **LILYGO T-Beam  LORA32 915MHz**
 
 * **Pin 15** is connected to **BNO085 SDA/MISO/TX**.  
 * **Pin 14** is connected to **BNO085 SCL/SCK/RX**.  
@@ -141,15 +141,15 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 
 ### **BNO085**
 
-* **SDA/MISO/TX** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 15**.  
-* **SCL/SCK/RX** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 14**.  
-* **VCC** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 3V3** and **PS1**.  
-* **GND** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin GND** and **PS0**.
+* **SDA/MISO/TX** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 15**.  
+* **SCL/SCK/RX** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 14**.  
+* **VCC** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 3V3** and **PS1**.  
+* **GND** is connected to **LILYGO T-Beam  LORA32 915MHz Pin GND** and **PS0**.
 
 ### **NEOPIXEL WS2812 45 LED Ring**
 
-* **GND** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin GND** and **Electrolytic Capacitor \-**.  
-* **5V** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 5V** and **Electrolytic Capacitor \+**.  
+* **GND** is connected to **LILYGO T-Beam  LORA32 915MHz Pin GND** and **Electrolytic Capacitor \-**.  
+* **5V** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 5V** and **Electrolytic Capacitor \+**.  
 * **D1** is connected to **Resistor pin1**.
 
 ### **Electrolytic Capacitor**
@@ -160,7 +160,7 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 ### **Resistor**
 
 * **pin1** is connected to **NEOPIXEL WS2812 45 LED Ring D1**.  
-* **pin2** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 13**.
+* **pin2** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 13**.
 
 
 ## Software Overview
