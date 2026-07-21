@@ -13,6 +13,9 @@ Imagine two friends each carrying a small “helper gadget” when they go hikin
 It is "off grid", not depending on access to phone or internet  
 
 
+![Diagram](images/schematic_path_view.jpg)
+
+
 ## What the gadget does:
 - ✅ It knows which way you are facing
 Like a compass, it can tell whether you’re pointing toward north, south, east, or west. 
