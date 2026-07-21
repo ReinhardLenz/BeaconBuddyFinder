@@ -5,6 +5,8 @@
 
 # Buddy finder compass LoRa Link (Sender + Receiver)
 
+(Note: at the moment the program compiles, but practical test is not yet done)
+
 ## The main idea:
 It’s like a “hot-and-cold” game, but instead of saying “warmer,” it simply points you in the right direction with a light.
  
