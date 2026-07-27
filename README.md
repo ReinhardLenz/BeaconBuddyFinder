@@ -85,7 +85,7 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 
 ## Electrical circuit diagram
 
-![Diagram](images/circuit_BNO085_T-beam_LED-ring.png)
+![Diagram](images/T-Beam-BNO085-MP3608-Neopixel.png)
 
 ## Photo
 
@@ -97,72 +97,86 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 
 ## **Component List**
 
-1. **LILYGO T-Beam LORA32 915MHz**  
-   * **Description**: A microcontroller module with LoRa capabilities, used for wireless communication.  
-   * **Pins**: TX, RX, 23, 4, 0, GND, 3V3, SCL/22, SDA/21, 3.3V, LoRa2, 5V, 2, 13, 14, 25, 33, 32, 35, 15, RST, VN, VP
+> 1. **LILYGO T-Beam Meshtastic LORA32 915MHz**  
+   * **Description**: A microcontroller module with LoRa capabilities.  
+   * **Pins**: TX, RX, 23, 4, 0, GND, 3V3, SCL/22, SDA/21, 3.3V, LoRa2, 5V, 2, 13, 14, 25, 33, 32, 35, 15, RST, VN, VP  
+
 ![Diagram](images/el-pin-meanings.jpg)
 
-
-
-2. **BNO085**  
-   * **Description**: A 9-axis sensor providing orientation, acceleration, and gyroscopic data.  
-   * **Pins**: VCC, GND, SCL/SCK/RX, SDA/MISO/TX, ADR/MOSI, CS, INT, RST, PS1, PS0 
-
-![Diagram](images/GY-BNO085.webp)
-
-3. **NEOPIXEL WS2812 45 LED Ring**  
-   * **Description**: A ring of 45 individually addressable RGB LEDs.  each LED in the ring has its own WS2812, which contains a small IC, which receives a serial data stream, extracts the 24bits for itself and forwards remaining bits to next LED. The address of an LED is it's order in the chain, bits are encoded by the high-time vs low-time of pulses as a single-wire, timing-based protocol (not UART). Data line: DOUT of LED n → DIN of LED n+1 
-   * **Pins**: GND, D1, 5V, D0
-   * 45LED 120mm 102mm 9mm
-   * RGB Full Color Highlighting
-
-
-
-4. **Electrolytic Capacitor**  
+> 2. **BNO085**  
+   * **Description**: A 9-axis sensor providing orientation and motion data.  
+   * **Pins**: VCC, GND, SCL/SCK/RX, SDA/MISO/TX, ADR/MOSI, CS, INT, RST, PS1, PS0  
+   
+   ![Setup Photo](images/GY-BNO085.webp)
+   
+> 3. **NEOPIXEL WS2812 45 LED RING**  
+   * **Description**: A ring of 45 individually addressable RGB LEDs.  
+   * **Pins**: GND, D1, 5V, D0  
+> 4. **Electrolytic Capacitor**  
    * **Description**: A capacitor used for power smoothing.  
-   * **Properties**: Capacitance of 0.00047 Farads  
+   * **Properties**: Capacitance: 0.00047 Farads  
    * **Pins**: \-, \+  
-5. **Resistor**  
+
+   ![Setup Photo](images/Polarity-wet-Al-Elcaps.jpg)
+
+> 5. **Resistor**  
    * **Description**: A resistor used for current limiting.  
-   * **Properties**: Resistance of 330 Ohms  
-   * **Pins**: pin1, pin2 (note:  stripe marking and for most through‑hole electrolytic capacitors, the shorter lead is the negative (−) lead.)
+   * **Properties**: Resistance: 330 Ohms  
+   * **Pins**: pin1, pin2  
 
+> 6. **18650 in holder**  
+   * **Description**: A rechargeable lithium-ion battery in a holder.  
+   * **Pins**: GND, VCC  
 
-
+> 7. **MT3608**  
+   * **Description**: A DC-DC boost converter for voltage regulation.  
+   * **Pins**: VIN+, VIN-, VOUT+, VOUT-
 
 ## **Wiring Details**
 
-### **LILYGO T-Beam  LORA32 915MHz**
+### **LILYGO T-Beam Meshtastic LORA32 915MHz**
 
-* **Pin 15** is connected to **BNO085 SDA/MISO/TX**.  
-* **Pin 14** is connected to **BNO085 SCL/SCK/RX**.  
-* **Pin 3V3** is connected to **BNO085 VCC** and **BNO085 PS1**.  
-* **Pin GND** is connected to **BNO085 GND**, **BNO085 PS0**, and **NEOPIXEL WS2812 45 LED Ring GND**.  
-* **Pin 5V** is connected to **NEOPIXEL WS2812 45 LED Ring 5V**.  
-* **Pin 13** is connected to **Resistor pin2**.
+> * **Pin 15** is connected to **BNO085 SDA/MISO/TX**.  
+> * **Pin 14** is connected to **BNO085 SCL/SCK/RX**.  
+> * **Pin 3V3** is connected to **BNO085 VCC** and **PS1**.  
+> * **Pin GND** is connected to **BNO085 GND**, **PS0**, **MT3608 VOUT-**, and **NEOPIXEL WS2812 45 LED RING GND**.  
+> * **Pin 13** is connected to **Resistor pin2**.
 
 ### **BNO085**
 
-* **SDA/MISO/TX** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 15**.  
-* **SCL/SCK/RX** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 14**.  
-* **VCC** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 3V3** and **PS1**.  
-* **GND** is connected to **LILYGO T-Beam  LORA32 915MHz Pin GND** and **PS0**.
+> * **SDA/MISO/TX** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 15**.  
+> * **SCL/SCK/RX** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 14**.  
+> * **VCC** and **PS1** are connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 3V3**.  
+> * **GND** and **PS0** are connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin GND**, **MT3608 VOUT-**, and **NEOPIXEL WS2812 45 LED RING GND**.
 
-### **NEOPIXEL WS2812 45 LED Ring**
+### **NEOPIXEL WS2812 45 LED RING**
 
-* **GND** is connected to **LILYGO T-Beam  LORA32 915MHz Pin GND** and **Electrolytic Capacitor \-**.  
-* **5V** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 5V** and **Electrolytic Capacitor \+**.  
-* **D1** is connected to **Resistor pin1**.
+> * **GND** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin GND**, **BNO085 GND**, **PS0**, and **MT3608 VOUT-**.  
+> * **D1** is connected to **Resistor pin1**.  
+> * **5V** is connected to **Electrolytic Capacitor \+** and **MT3608 VOUT+**.  
+> * **D0** is not connected.
 
 ### **Electrolytic Capacitor**
 
-* **\-** is connected to **NEOPIXEL WS2812 45 LED Ring GND**.  
-* **\+** is connected to **NEOPIXEL WS2812 45 LED Ring 5V**.
+> * **\-** is connected to **NEOPIXEL WS2812 45 LED RING GND**.  
+> * **\+** is connected to **NEOPIXEL WS2812 45 LED RING 5V**.
 
 ### **Resistor**
 
-* **pin1** is connected to **NEOPIXEL WS2812 45 LED Ring D1**.  
-* **pin2** is connected to **LILYGO T-Beam  LORA32 915MHz Pin 13**.
+> * **pin1** is connected to **NEOPIXEL WS2812 45 LED RING D1**.  
+> * **pin2** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin 13**.
+
+### **18650 in holder**
+
+> * **GND** is connected to **MT3608 VIN-**.  
+> * **VCC** is connected to **MT3608 VIN+**.
+
+### **MT3608**
+
+> * **VIN+** is connected to **18650 in holder VCC**.  
+> * **VIN-** is connected to **18650 in holder GND**.  
+> * **VOUT+** is connected to **NEOPIXEL WS2812 45 LED RING 5V**.  
+> * **VOUT-** is connected to **LILYGO T-Beam Meshtastic LORA32 915MHz Pin GND**, **BNO085 GND**, **PS0**, and **NEOPIXEL WS2812 45 LED RING GND**.
 
 
 ## Software Overview
