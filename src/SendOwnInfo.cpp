@@ -1,30 +1,28 @@
+// SendOwnInfo.cpp
 #include "SendOwnInfo.h"
 
-// Define the globals (storage lives here)
-double lat_proper = 0.0;
-double lon_proper = 0.0;
-
-void prepareAndSendOwnInfo(
+OwnInfo prepareAndSendOwnInfo(
   SX1262& radio,
   TinyGPSPlus& gps,
-  char* msg,
-  size_t msgSize,
   int& transmissionState,
   bool& transmitFlag
 ) {
-  if (gps.location.isUpdated()) {
-    lat_proper = gps.location.lat();
-    lon_proper = gps.location.lng();
-    
+  OwnInfo out;
 
-    snprintf(msg, msgSize, "%.6f,%.6f\r\n", lat_proper, lon_proper);
+  if (gps.location.isUpdated()) {
+    out.hasFix = true;
+    out.lat_proper = gps.location.lat();
+    out.lon_proper = gps.location.lng();
+
+    char buf[48];
+    snprintf(buf, sizeof(buf), "%.6f,%.6f\r\n", out.lat_proper, out.lon_proper);
+    out.payload = buf;
   } else {
-    snprintf(msg, msgSize, "No GPS\r\n");
+    out.payload = "No GPS\r\n";
   }
-/*
-  Serial.print("Sending: ");
-  Serial.println(msg);
-*/
-  transmissionState = radio.startTransmit(msg);
+
+  transmissionState = radio.startTransmit(out.payload.c_str());
   transmitFlag = true;
+
+  return out;
 }

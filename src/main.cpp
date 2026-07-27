@@ -75,6 +75,12 @@ static const int LORA_BUSY = 32;
 
 static const float LORA_FREQ = 868.0;
 
+double lastLatProper = 0.0;
+double lastLonProper = 0.0;
+bool   lastProperFixValid = false;
+
+
+
 char msg[96];
 
 SX1262 radio = SX1262(
@@ -170,33 +176,28 @@ void loop() {
         handleTxFinished(radio, transmitFlag, transmissionState);
 
       } else {
-        handleRxAndCompute(radio, lat_proper, lon_proper);
+        bool properFixValid = gps.location.isValid();   // recommended vs (lat==0 && lon==0)
 
-        // ✅ Now these are "public" globals from the modules:
-        /*'
-        Serial.print("MAIN sees lat_proper/lon_proper: ");
-        Serial.print(lat_proper, 6);
-        Serial.print(", ");
-        Serial.println(lon_proper, 6);
+        // 1) When receiving: use the last known own position
+        BuddyInfo buddy = handleRxAndCompute(radio, lastLatProper, lastLonProper, lastProperFixValid);
 
-        Serial.print("MAIN sees lat_companion/lon_companion: ");
-        Serial.print(lat_companion, 6);
-        Serial.print(", ");
-        Serial.println(lon_companion, 6);
-*/
-  //      Serial.print("MAIN sees d/b: ");
-        Serial.print(d, 1);
-        Serial.print(",");
-        Serial.println(b, 1);
- //       Serial.println(" deg");
+        if (buddy.hasSolution) {
+          Serial.print(buddy.d_meters, 1);
+          Serial.print(",");
+          Serial.println(buddy.b_degrees, 1);
+        }
 
-        compass.processSensor();
-        Serial.print("Yaw  ");
-        Serial.println(compass.getYawNorthDeg());
+        // 2) When sending: update last known own position from returned struct
+        OwnInfo own = prepareAndSendOwnInfo(radio, gps, transmissionState, transmitFlag);
 
-        delay(1000);
+        lastProperFixValid = own.hasFix;
+        if (own.hasFix) {
+          lastLatProper = own.lat_proper;
+          lastLonProper = own.lon_proper;
+        }
 
-        prepareAndSendOwnInfo(radio, gps, msg, sizeof(msg), transmissionState, transmitFlag);
+
+
       }
 
     }

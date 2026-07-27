@@ -452,9 +452,6 @@ void setup() {
 
     Serial.println("Reading events");
     delay(100);
-}
-
-
 // --------------------
 // end BNO085 UART
 // --------------------
