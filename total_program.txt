@@ -1,3 +1,92 @@
+// Content from LED.cpp
+#include "LED.h"
+#include <config.h>
+
+LedRing::LedRing(uint16_t ledCount, uint8_t dataPin)
+: m_ledCount(ledCount),
+  m_dataPin(dataPin)
+{
+}
+
+void LedRing::begin(uint8_t brightness)
+{
+  if (m_leds == nullptr)
+  {
+    m_leds = new CRGB[m_ledCount];
+  }
+
+  // Use compile-time pin from config.h (recommended with FastLED)
+  FastLED.addLeds<WS2812B, PIN_LED_RING, GRB>(m_leds, m_ledCount);
+  FastLED.setBrightness(brightness);
+
+  fill_solid(m_leds, m_ledCount, CRGB::Black);
+  FastLED.show();
+}
+
+void LedRing::setBrightness(uint8_t brightness)
+{
+  FastLED.setBrightness(brightness);
+}
+
+void LedRing::clear()
+{
+  if (!m_leds) return;
+  fill_solid(m_leds, m_ledCount, CRGB::Black);
+  FastLED.show();
+}
+
+uint16_t LedRing::yawToIndex(float yawNorthDeg) const
+{
+  while (yawNorthDeg < 0.0f)    yawNorthDeg += 360.0f;
+  while (yawNorthDeg >= 360.0f) yawNorthDeg -= 360.0f;
+
+  return static_cast<uint16_t>((yawNorthDeg * m_ledCount) / 360.0f) % m_ledCount;
+}
+
+void LedRing::showDirection(float yawNorthDeg, const CRGB& color)
+{
+  if (!m_leds) return;
+
+  const uint16_t idx = yawToIndex(yawNorthDeg);
+
+  fill_solid(m_leds, m_ledCount, CRGB::Black);
+  m_leds[idx] = color;
+
+  FastLED.show();
+}
+
+// Content from LED.h
+#ifndef LED_H
+#define LED_H
+
+#include <Arduino.h>
+#include <FastLED.h>
+
+class LedRing
+{
+public:
+  LedRing(uint16_t ledCount, uint8_t dataPin);
+  
+  void begin(uint8_t brightness);
+
+  // Show a single "direction" pixel based on yaw in degrees (0..360)
+  void showDirection(float yawNorthDeg, const CRGB& color = CRGB::White);
+
+  // Optional helpers
+  void clear();
+  void setBrightness(uint8_t brightness);
+
+private:
+  uint16_t m_ledCount;
+  uint8_t  m_dataPin;
+
+  CRGB* m_leds = nullptr;
+
+  uint16_t yawToIndex(float yawNorthDeg) const;
+};
+
+#endif
+
 // Content from ReceiveBuddyInfo.cpp
 #include "ReceiveBuddyInfo.h"
 #include <math.h>
@@ -6,7 +95,7 @@
 double lat_companion = 0.0;
 double lon_companion = 0.0;
 double d = 0.0;
-double b = 0.0;
+float b = 0.0f;
 
 static inline double deg2rad(double deg) { return deg * (M_PI / 180.0); }
 static inline double rad2deg(double rad) { return rad * (180.0 / M_PI); }
@@ -138,7 +227,7 @@ void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
 extern double lat_companion;
 extern double lon_companion;
 extern double d;   // distance (meters)
-extern double b;   // bearing (degrees)
+extern float b;   // bearing (degrees)
 
 // Helpers exposed (used by main.cpp or other modules if needed)
 bool parseCompanionGps(const String& in, double &latOut, double &lonOut);
@@ -342,6 +431,7 @@ euler_t ypr_1{};
 #include "compass.h"
 #include "ReceiveBuddyInfo.h"
 #include "SendOwnInfo.h"
+#include "LED.h"
 
 // --------------------
 // from BNO085 UART
@@ -351,6 +441,10 @@ constexpr gpio_num_t PIN_BNO_RESET = GPIO_NUM_13;
 Adafruit_BNO08x bno08x(PIN_BNO_RESET);
 
 Compass compass(bno08x);
+
+
+// LED ring module
+LedRing ledRing(LED_COUNT, static_cast<uint8_t>(PIN_LED_RING));
 
 constexpr char PROGRAM_NAME[] = "Stage 1A UART Diagnostic";
 constexpr char VERSION[]      = "0.1.0";
@@ -409,7 +503,7 @@ static const int LORA_BUSY = 32;
 
 static const float LORA_FREQ = 868.0;
 
-double BuddyBearing=0;
+float BuddyBearing = 0.0f;
 
 char msg[96];
 
@@ -422,7 +516,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-//#define INITIATING_NODE
+#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;
@@ -430,6 +524,13 @@ void setFlag(void) {
 
 TinyGPSPlus gps;
 HardwareSerial GPS(1);
+
+
+static inline float wrap360(float deg) {
+  deg = fmod(deg, 360.0);
+  if (deg < 0) deg += 360.0;
+  return deg;
+}
 
 void setup() {
 // --------------------
@@ -441,7 +542,7 @@ void setup() {
 
     while (!Serial)  delay(RESET_TIME_MS);
     
-    Serial.println("Adafruit BNO08x Accelerometer test!");
+    Serial.println("start Adafruit BNO08x test!");
 
     if (!bno08x.begin_UART(&Serial2))
     {
@@ -457,7 +558,6 @@ void setup() {
 // --------------------
 // end BNO085 UART
 // --------------------
-
   GPS.begin(9600, SERIAL_8N1, 34, 12);
   Serial.println("Listening for GPS...");
   delay(1000);
@@ -490,6 +590,8 @@ void setup() {
     while (true) { delay(10); }
   }
 #endif
+  ledRing.begin(LED_BRIGHTNESS);
+
 }
 
 void loop() {
@@ -530,7 +632,11 @@ void loop() {
         Serial.print("Yaw  ");
         Serial.println(compass.getYawNorthDeg());
 
-        BuddyBearing=compass.getYawNorthDeg()-b;
+//      Normalize the bearing to 0-360 degrees  
+        BuddyBearing = wrap360((compass.getYawNorthDeg()) - b);
+        ledRing.showDirection(BuddyBearing , CRGB::White);
+
+
 
         delay(1000);
 

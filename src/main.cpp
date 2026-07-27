@@ -93,7 +93,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-//#define INITIATING_NODE
+#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;
