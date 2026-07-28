@@ -3,16 +3,18 @@
 #include <RadioLib.h>
 #include <TinyGPSPlus.h>
 
-// Public (global) outputs from this module:
-extern double lat_proper;
-extern double lon_proper;
+struct OwnInfo {
+  bool   hasFix    = false;   // gps.location.isUpdated() was true
+  double lat_proper = 0.0;
+  double lon_proper = 0.0;
 
-// Main entry point:
-void prepareAndSendOwnInfo(
+  // what we actually sent (useful for debugging/printing)
+  String payload;
+};
+
+OwnInfo prepareAndSendOwnInfo(
   SX1262& radio,
   TinyGPSPlus& gps,
-  char* msg,
-  size_t msgSize,
   int& transmissionState,
   bool& transmitFlag
 );
