@@ -89,7 +89,7 @@ In this project, LoRa is used to send a the GPS coordinates from one board to an
 
 ## Photo
 
-![Diagram](images/T-Beam-2x-photo_test_arr_A.jpg)
+![Diagram](images/T2_devices_T-Beam_LED_ring.jpg)
 
 
 
