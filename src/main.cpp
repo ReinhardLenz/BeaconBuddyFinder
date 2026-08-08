@@ -223,7 +223,11 @@ void setup() {
 
 -------------------
 
+// --------------------
+// start BNO085 UART
+// --------------------
 
+    //Serial.begin(PC_BAUD);
 
     Serial2.begin(BNO_BAUD, SERIAL_8N1, PIN_BNO_RX, PIN_BNO_TX);
 
