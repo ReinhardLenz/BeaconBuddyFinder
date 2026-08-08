@@ -182,7 +182,7 @@ static inline float wrap360(float deg) {
 
 void setup() {
 
-
+  Serial.begin(USB_BAUD);
   
 // --------------------
 // start BNO085 UART
@@ -223,7 +223,7 @@ void setup() {
 
 -------------------
 
-    Serial.begin(USB_BAUD);
+
 
     Serial2.begin(BNO_BAUD, SERIAL_8N1, PIN_BNO_RX, PIN_BNO_TX);
 
