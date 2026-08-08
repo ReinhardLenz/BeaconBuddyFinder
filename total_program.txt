@@ -88,14 +88,9 @@ private:
 #endif
 
 // Content from ReceiveBuddyInfo.cpp
+// ReceiveBuddyInfo.cpp
 #include "ReceiveBuddyInfo.h"
 #include <math.h>
-
-// Define the globals (storage lives here)
-double lat_companion = 0.0;
-double lon_companion = 0.0;
-double d = 0.0;
-float b = 0.0f;
 
 static inline double deg2rad(double deg) { return deg * (M_PI / 180.0); }
 static inline double rad2deg(double rad) { return rad * (180.0 / M_PI); }
@@ -153,126 +148,115 @@ double bearingDegrees(double lat1, double lon1, double lat2, double lon2) {
   return brng;
 }
 
-static bool companionValid() {
-  return !(lat_companion == 0.0 && lon_companion == 0.0);
-}
-
-static bool properValid(double lat_proper, double lon_proper) {
-  // If you prefer TinyGPSPlus validity, keep that check in main.cpp and pass a bool instead.
-  return !(lat_proper == 0.0 && lon_proper == 0.0);
-}
-
 void handleTxFinished(SX1262& radio, bool& transmitFlag, int transmissionState) {
-  if (transmissionState == RADIOLIB_ERR_NONE) {
-//    Serial.println(F("transmission finished!"));
-  } else {
+  if (transmissionState != RADIOLIB_ERR_NONE) {
     Serial.print(F("failed, code "));
     Serial.println(transmissionState);
   }
-
   radio.startReceive();
   transmitFlag = false;
 }
 
-void handleRxAndCompute(SX1262& radio, double lat_proper, double lon_proper) {
+BuddyInfo handleRxAndCompute(
+  SX1262& radio,
+  double lat_proper,
+  double lon_proper,
+  bool   properFixValid
+) {
+  BuddyInfo out;
+  out.hasProperFix = properFixValid;
+
   String str;
   int state = radio.readData(str);
 
   if (state != RADIOLIB_ERR_NONE) {
     Serial.print("readData failed, code ");
     Serial.println(state);
-    return;
+    return out;
   }
 
-//  Serial.print("Received raw: ");
-//  Serial.println(str);
-
-  double latTmp, lonTmp;
+  double latTmp = 0.0, lonTmp = 0.0;
   if (!parseCompanionGps(str, latTmp, lonTmp)) {
     Serial.println("⚠️ Received message is not a valid 'lat,lon' pair (ignored).");
-    return;
+    return out;
   }
 
-  lat_companion = latTmp;
-  lon_companion = lonTmp;
-/*
-  Serial.print("✅ Parsed companion GPS -> Latitude = ");
-  Serial.print(lat_companion, 6);
-  Serial.print(" Longitude = ");
-  Serial.println(lon_companion, 6);
-*/
-  if (properValid(lat_proper, lon_proper) && companionValid()) {
-    d = distanceMeters(lat_proper, lon_proper, lat_companion, lon_companion);
-    b = bearingDegrees(lat_proper, lon_proper, lat_companion, lon_companion);
-/*
-    Serial.print("📏 Distance to companion: ");
-    Serial.print(d, 1);
-    Serial.println(" m");
+  out.hasCompanionFix = true;
+  out.lat_companion = latTmp;
+  out.lon_companion = lonTmp;
 
-    Serial.print("🧭 Bearing to companion: ");
-    Serial.print(b, 1);
-    Serial.println(" deg (0=N, 90=E)");
-  */  
+  if (out.hasProperFix && out.hasCompanionFix) {
+    out.d_meters  = distanceMeters(lat_proper, lon_proper, out.lat_companion, out.lon_companion);
+    out.b_degrees = bearingDegrees(lat_proper, lon_proper, out.lat_companion, out.lon_companion);
+    out.hasSolution = true;
   } else {
     Serial.println("⚠️ Cannot compute distance/bearing yet (missing valid GPS fix).");
   }
+
+  return out;
 }
 
 // Content from ReceiveBuddyInfo.h
+// ReceiveBuddyInfo.h
 #pragma once
 #include <Arduino.h>
 #include <RadioLib.h>
 
-// Public (global) outputs from this module:
-extern double lat_companion;
-extern double lon_companion;
-extern double d;   // distance (meters)
-extern float b;   // bearing (degrees)
+struct BuddyInfo {
+  bool hasCompanionFix = false;   // parsed companion lat/lon successfully
+  bool hasProperFix    = false;   // caller says own GPS is valid
+  bool hasSolution     = false;   // distance/bearing computed
 
-// Helpers exposed (used by main.cpp or other modules if needed)
+  double lat_companion = 0.0;
+  double lon_companion = 0.0;
+  double d_meters      = 0.0;
+  double b_degrees     = 0.0;
+};
+
+// Helpers exposed (optional)
 bool parseCompanionGps(const String& in, double &latOut, double &lonOut);
 double distanceMeters(double lat1, double lon1, double lat2, double lon2);
 double bearingDegrees(double lat1, double lon1, double lat2, double lon2);
 
-// Main entry points for your split logic:
+// Main entry points
 void handleTxFinished(SX1262& radio, bool& transmitFlag, int transmissionState);
 
-void handleRxAndCompute(
+// Now returns the computed values instead of writing globals
+BuddyInfo handleRxAndCompute(
   SX1262& radio,
   double lat_proper,
-  double lon_proper
+  double lon_proper,
+  bool   properFixValid
 );
 
 // Content from SendOwnInfo.cpp
+// SendOwnInfo.cpp
 #include "SendOwnInfo.h"
 
-// Define the globals (storage lives here)
-double lat_proper = 0.0;
-double lon_proper = 0.0;
-
-void prepareAndSendOwnInfo(
+OwnInfo prepareAndSendOwnInfo(
   SX1262& radio,
   TinyGPSPlus& gps,
-  char* msg,
-  size_t msgSize,
   int& transmissionState,
   bool& transmitFlag
 ) {
-  if (gps.location.isUpdated()) {
-    lat_proper = gps.location.lat();
-    lon_proper = gps.location.lng();
-    
+  OwnInfo out;
 
-    snprintf(msg, msgSize, "%.6f,%.6f\r\n", lat_proper, lon_proper);
+  if (gps.location.isUpdated()) {
+    out.hasFix = true;
+    out.lat_proper = gps.location.lat();
+    out.lon_proper = gps.location.lng();
+
+    char buf[48];
+    snprintf(buf, sizeof(buf), "%.6f,%.6f\r\n", out.lat_proper, out.lon_proper);
+    out.payload = buf;
   } else {
-    snprintf(msg, msgSize, "No GPS\r\n");
+    out.payload = "No GPS\r\n";
   }
-/*
-  Serial.print("Sending: ");
-  Serial.println(msg);
-*/
-  transmissionState = radio.startTransmit(msg);
+
+  transmissionState = radio.startTransmit(out.payload.c_str());
   transmitFlag = true;
+
+  return out;
 }
 
 // Content from SendOwnInfo.h
@@ -281,16 +265,18 @@ void prepareAndSendOwnInfo(
 #include <RadioLib.h>
 #include <TinyGPSPlus.h>
 
-// Public (global) outputs from this module:
-extern double lat_proper;
-extern double lon_proper;
+struct OwnInfo {
+  bool   hasFix    = false;   // gps.location.isUpdated() was true
+  double lat_proper = 0.0;
+  double lon_proper = 0.0;
 
-// Main entry point:
-void prepareAndSendOwnInfo(
+  // what we actually sent (useful for debugging/printing)
+  String payload;
+};
+
+OwnInfo prepareAndSendOwnInfo(
   SX1262& radio,
   TinyGPSPlus& gps,
-  char* msg,
-  size_t msgSize,
   int& transmissionState,
   bool& transmitFlag
 );
@@ -431,8 +417,26 @@ euler_t ypr_1{};
 #include "compass.h"
 #include "ReceiveBuddyInfo.h"
 #include "SendOwnInfo.h"
-#include "LED.h"
+#include <FastLED.h>
+#include <Wire.h>
+// ------------------------------------------------------------
+// T-Beam v1.2 AXP2101 I2C
+// ------------------------------------------------------------
 
+#define I2C_SDA       21
+#define I2C_SCL       22
+
+#define AXP2101_ADDR  0x34
+
+#define AXP2101_DLDO1_VOL  0x99
+#define AXP2101_DLDO_EN    0x9C
+
+
+// ------------------------------------------------------------
+// Serial configuration
+// ------------------------------------------------------------
+
+#define USB_BAUD  115200
 // --------------------
 // from BNO085 UART
 // --------------------
@@ -493,6 +497,53 @@ void fatalError(ErrorCode code)
     }
 }
 
+// ------------------------------------------------------------
+// AXP2101 helpers
+// ------------------------------------------------------------
+
+void axpWrite(uint8_t reg, uint8_t val)
+{
+    Wire.beginTransmission(AXP2101_ADDR);
+    Wire.write(reg);
+    Wire.write(val);
+    Wire.endTransmission();
+}
+
+
+uint8_t axpRead(uint8_t reg)
+{
+    Wire.beginTransmission(AXP2101_ADDR);
+    Wire.write(reg);
+    Wire.endTransmission(false);
+
+    Wire.requestFrom((uint8_t)AXP2101_ADDR, (uint8_t)1);
+
+    return Wire.available() ? Wire.read() : 0xFF;
+}
+
+
+void enableGPSPower()
+{
+    // DLDO1 = 3.3 V
+    axpWrite(AXP2101_DLDO1_VOL, 0x1C);
+
+    delay(20);
+
+    // Enable DLDO1, preserving the other bits
+    uint8_t reg = axpRead(AXP2101_DLDO_EN);
+
+    axpWrite(AXP2101_DLDO_EN, reg | 0x01);
+
+    delay(200);
+}
+
+
+// ------------------------------------------------------------
+// NMEA line buffer
+// ------------------------------------------------------------
+
+
+
 // --------------------
 // pins for Lora
 // --------------------
@@ -502,6 +553,11 @@ static const int LORA_RST  = 23;
 static const int LORA_BUSY = 32;
 
 static const float LORA_FREQ = 868.0;
+
+double lastLatProper = 0.0;
+double lastLonProper = 0.0;
+bool   lastProperFixValid = false;
+
 
 float BuddyBearing = 0.0f;
 
@@ -516,7 +572,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-#define INITIATING_NODE
+//#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;
@@ -533,9 +589,46 @@ static inline float wrap360(float deg) {
 }
 
 void setup() {
+
+  Serial.begin(USB_BAUD);
 // --------------------
 // start BNO085 UART
-// --------------------
+// -
+
+  // --------------------------------------------------------
+  // AXP2101
+  // --------------------------------------------------------
+
+  Wire.begin(I2C_SDA, I2C_SCL);
+
+  delay(50);
+
+  Wire.beginTransmission(AXP2101_ADDR);
+
+  if (Wire.endTransmission() == 0) {
+
+      Serial.println();
+      Serial.println(
+          "AXP2101 detected -> enabling GPS power..."
+      );
+
+      enableGPSPower();
+
+      Serial.println("GPS power enabled.");
+
+  } else {
+
+      Serial.println();
+      Serial.println(
+          "WARNING: AXP2101 not detected at 0x34."
+      );
+
+      Serial.println(
+          "GPS may be unpowered."
+      );
+  }
+
+-------------------
 
     Serial.begin(PC_BAUD);
     Serial2.begin(BNO_BAUD, SERIAL_8N1, PIN_BNO_RX, PIN_BNO_TX);
@@ -608,39 +701,35 @@ void loop() {
         handleTxFinished(radio, transmitFlag, transmissionState);
 
       } else {
-        handleRxAndCompute(radio, lat_proper, lon_proper);
 
-        // ✅ Now these are "public" globals from the modules:
-        /*'
-        Serial.print("MAIN sees lat_proper/lon_proper: ");
-        Serial.print(lat_proper, 6);
-        Serial.print(", ");
-        Serial.println(lon_proper, 6);
+        
+        bool properFixValid = gps.location.isValid();   // recommended vs (lat==0 && lon==0)
+        BuddyInfo buddy = handleRxAndCompute(radio, lastLatProper, lastLonProper, lastProperFixValid);
 
-        Serial.print("MAIN sees lat_companion/lon_companion: ");
-        Serial.print(lat_companion, 6);
-        Serial.print(", ");
-        Serial.println(lon_companion, 6);
-*/
-  //      Serial.print("MAIN sees d/b: ");
-        Serial.print(d, 1);
-        Serial.print(",");
-        Serial.println(b, 1);
- //       Serial.println(" deg");
+        if (buddy.hasSolution) {
+          Serial.print(buddy.d_meters, 1);
+          Serial.print(",");
+          Serial.println(buddy.b_degrees, 1);
+        }
 
         compass.processSensor();
         Serial.print("Yaw  ");
         Serial.println(compass.getYawNorthDeg());
 
 //      Normalize the bearing to 0-360 degrees  
-        BuddyBearing = wrap360((compass.getYawNorthDeg()) - b);
+        BuddyBearing = wrap360((compass.getYawNorthDeg()) - buddy.b_degrees);
         ledRing.showDirection(BuddyBearing , CRGB::White);
 
 
+        // 2) When sending: update last known own position from returned struct
+        OwnInfo own = prepareAndSendOwnInfo(radio, gps, transmissionState, transmitFlag);
 
-        delay(1000);
+        lastProperFixValid = own.hasFix;
+        if (own.hasFix) {
+          lastLatProper = own.lat_proper;
+          lastLonProper = own.lon_proper;
+        }
 
-        prepareAndSendOwnInfo(radio, gps, msg, sizeof(msg), transmissionState, transmitFlag);
       }
 
     }
