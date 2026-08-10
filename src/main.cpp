@@ -8,9 +8,10 @@
 #include "compass.h"
 #include "ReceiveBuddyInfo.h"
 #include "SendOwnInfo.h"
+#include "LED.h"
 #include <FastLED.h>
 #include <Wire.h>
-#include "LED.h"
+
 // ------------------------------------------------------------
 // T-Beam v1.2 AXP2101 I2C
 // ------------------------------------------------------------
@@ -164,7 +165,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-//#define INITIATING_NODE
+#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;
@@ -184,9 +185,6 @@ void setup() {
 
   Serial.begin(USB_BAUD);
   
-// --------------------
-// start BNO085 UART
-// -
 
   // --------------------------------------------------------
   // AXP2101
@@ -221,14 +219,10 @@ void setup() {
       );
   }
 
--------------------
 
 // --------------------
 // start BNO085 UART
 // --------------------
-
-    //Serial.begin(PC_BAUD);
-
     Serial2.begin(BNO_BAUD, SERIAL_8N1, PIN_BNO_RX, PIN_BNO_TX);
 
     while (!Serial)  delay(RESET_TIME_MS);
