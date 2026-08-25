@@ -185,7 +185,13 @@ In this branch GPS_bearing, the distance and bearing between "self" T-BEAM and "
 
 ## Program Logic (How it works)
 
-### 1) (`main.cpp`)
+###  **GPS Initialization & Configuration**
+
+   - Powers the GPS module via the AXP2101 PMIC (power management IC) The program attempts to communicate with the AXP2101 chip (which manages the voltages). If it finds a signal, it activates the output that powers the GPS (3.3V). Otherwise, it displays a warning.
+
+![Diagram](images/T-beam_data_bus_overview.jpg)
+
+### (`main.cpp`)
 This sketch makes two ESP32 T‑Beam boards “take turns” talking over LoRa. One board starts by sending a first message (because #define INITIATING_NODE is enabled). After that, the devices alternate like a ping‑pong game:
 
 Step A (Transmit): send a LoRa packet
