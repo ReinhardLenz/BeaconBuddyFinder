@@ -574,7 +574,7 @@ bool transmitFlag = false;
 volatile bool operationDone = false;
 
 // Uncomment on ONE of the two nodes only
-//#define INITIATING_NODE
+#define INITIATING_NODE
 
 void setFlag(void) {
   operationDone = true;
@@ -628,14 +628,10 @@ void setup() {
       );
   }
 
--------------------
 
 // --------------------
 // start BNO085 UART
 // --------------------
-
-    Serial.begin(PC_BAUD);
-
     Serial2.begin(BNO_BAUD, SERIAL_8N1, PIN_BNO_RX, PIN_BNO_TX);
 
     while (!Serial)  delay(RESET_TIME_MS);
