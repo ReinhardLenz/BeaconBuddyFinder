@@ -5,7 +5,14 @@
 
 # Buddy finder compass LoRa Link (Sender + Receiver)
 
-(Note: at the moment the program compiles, but practical test is not yet done)
+(Note: at the moment the program compiles, but practical test is not yet done.)
+
+4.9.2026: at the moment I got functioning the identical project:
+
+ [Hot and cold game Ublox](https://github.com/ReinhardLenz/lora_hot_and_cold_game_gps_ublox)
+
+So I don't think I will do much about this GPS NMEA based in the near future. 
+
 
 ## The main idea:
 It’s like a “hot-and-cold” game, but instead of saying “warmer,” it simply points you in the right direction with a light.
